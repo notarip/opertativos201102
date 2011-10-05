@@ -1,0 +1,200 @@
+#!/bin/bash
+
+# Codigos de colores para la terminal
+
+COLOR_A=33	#Amarillo
+COLOR_SE=00	#Normal
+COLOR_I=34 	#Azul
+COLOR_E=31	#Rojo
+
+# Codigos de errores
+
+ERR_ARCH_NO_EXISTE=4
+ERR_ARCH_INVALIDO=150
+ERR_TIPO_MSJ=3
+ERR_PARAM_NO_NUM=1
+ERR_CANT_PARAM=2
+
+LOGEXT="log" #VIENE DE AFUERA
+PATH=${PATH}:$PWD #VIENE DE AFUERA
+
+# MOSTRARLOG: Realiza el formateo de las lineas del log que pasaron por el filtro #
+
+#ADVERTENCIA: No estoy seguro que el codigo sea portable por el tema de los colores, a lo sumo se reescribe el formateo y listo
+
+mostrarLog() {
+
+echo
+MENSAJE=$(echo "FECHA-USUARIO-TIPO DE MENSAJE-MENSAJE")
+echo -e "\E["00"m"$MENSAJE"">>"temp"
+echo "$1" | while read line
+do
+	FECHA=$(echo $line | sed -n "s/^\([^-]*\).*/\1/p")
+	FECHA=$(date -d "$FECHA" "+%d/%m/%Y %H:%M:%S")
+	USUARIO=$(echo $line | sed -n "s/^[^-]*-\([^-]*\).*/\1/p")
+	TIPO_MSJ=$(echo $line | sed -n "s/.*-\([^-]*\)-[^-]*$/\1/p")
+	MSJ=$(echo $line | sed -n "s/.*-\([^-]*\)$/\1/p")
+
+	case $TIPO_MSJ in
+
+		"E" ) COLOR=$COLOR_E;TIPO_MSJ="ERROR";;
+		"SE" ) COLOR=$COLOR_SE;TIPO_MSJ="ERROR SEVERO";;
+		"A" ) COLOR=$COLOR_A;TIPO_MSJ="ADVERTENCIA";;
+		"I" ) COLOR=$COLOR_I;TIPO_MSJ="INFORMACION";;
+
+	esac
+
+	MENSAJE="$FECHA-$USUARIO-$TIPO_MSJ-$MSJ"
+	echo -e "\E["$COLOR"m"$MENSAJE"\033[0m">>"temp"
+done
+column -s - -t temp | more
+echo
+rm temp
+return 0
+}
+
+# MOSTRARAYUDA: Imprime la pantalla de ayuda
+
+mostrarAyuda() {
+echo
+echo "MODO DE USO: mirarC [OPCIONES] [ARGUMENTOS] archivoDeLog"
+echo "Formatea el log pasado como parametro y lo imprime por salida estandar"
+echo
+echo "OPCIONES:"
+echo "-s		Muestra las entradas del log que contienen el string pasado"
+echo "-t		Muestra las entradas del log que son del tipo o tipos pasado como parametro (A,SE,I,E)"
+echo "-n		Muestra las ultimas N lineas del log"
+echo "-h,--help 	Muestra esta pantalla"
+echo "-v, --version	Informa de la version"
+echo
+return 0
+}
+
+# MOSTRARVERSION: Imprime la pantalla con informacion sobre la version
+
+mostrarVersion() {
+echo
+echo "mirarC 1.0"
+echo "Escrito por Rodolfo Cruz y Martin Ciruzzi"
+echo
+return 0
+}
+
+
+############################################# COMIENZO DEL SCRIPT ########################################################
+
+if [ $# -eq 0 ]
+then
+	echo "Cantidad erronea de parametros"
+	loguearC -s $ERR_CANT_PARAM "como minimo 2"
+	exit $ERR_CANT_PARAM
+fi
+
+#Mostrar pantalla de ayuda
+
+if [ "$1" = "-h" -o "$1" = "--help" ]
+then
+	mostrarAyuda
+	exit 0
+fi
+
+if [ "$1" = "-v" -o "$1" = "--version" ]
+then
+	mostrarVersion
+	exit 0
+fi
+
+if [ ! -e $BASH_ARGV ] #BASH_ARGV es el ultimo argumento pasado
+then
+	echo "Archivo Inexistente"
+	loguearC -s $ERR_ARCH_NO_EXISTE $BASH_ARGV
+	exit $ERR_ARCH_NO_EXISTE
+fi
+
+EXTENSION=${BASH_ARGV##*[.]}
+
+if [ ! $EXTENSION = $LOGEXT ]
+then
+	echo "Archivo Invalido"
+	loguearC E "Archivo Invalido"
+	exit $ERR_ARCH_INVALIDO
+fi
+
+# Mostrar los ultimos N registros del log
+
+if [ $1 = "-n" ]
+then
+	expr "$2" + 1 &> /dev/null
+	if [ $? -eq 0 ]
+	then
+		CONTENIDO=$(tail -n $2 $3)
+		mostrarLog "$CONTENIDO"
+		exit 0
+	else
+		echo "Parametro no Numerico"
+		loguearC -s $ERR_PARAM_NO_NUM
+		exit $ERR_PARAM_NO_NUM
+	fi
+
+	if [ $# -ne 3 ] 
+	then
+		echo "Cantidad erronea de parametros"
+		loguearC -s $ERR_CANT_PARAM 3
+		exit $ERR_CANT_PARAM
+	fi
+fi
+
+# Mostrar las lineas del archivo de log que correspondan a los tipos de msj pasados como parametro
+
+if [ $1 = "-t" ]
+then	
+	for ((ARG=2; ARG < $# ; ARG++))
+	do
+		if [ "${!ARG}" = "I" -o "${!ARG}" = "A" -o "${!ARG}" = "SE" -o "${!ARG}" = "E" ]
+		then
+			if [ "${!ARG}" = "SE" ]
+			then
+				TIPOS="$TIPOS""S"
+			else 
+				TIPOS="$TIPOS""${!ARG}"
+			fi
+		else
+			echo "Tipo de Mensaje Invalido"
+			loguearC -s $ERR_TIPO_MSJ
+			exit $ERR_TIPO_MSJ
+		fi
+	done
+	CONTENIDO=$(grep ".*-[$TIPOS]E\?-[^-]*$" $BASH_ARGV)
+	mostrarLog "$CONTENIDO"
+	exit 0
+fi
+
+# Mostrar las lineas del archivo de log que contengan al string pasado como parametro
+
+if [ $1 = "-s" ]
+then
+	if [ $# -ne 3 ] 
+	then
+		echo "Cantidad erronea de parametros"
+		loguearC -s $ERR_CANT_PARAM 3
+		exit $ERR_CANT_PARAM
+	fi
+	
+	CONTENIDO=$(grep "$2" $3)
+	mostrarLog "$CONTENIDO"
+	exit 0
+
+fi
+
+# Caso Base, mostrar archivo de log pasado como parametro
+
+if [ $# -ne 1 ]
+then
+	echo "Cantidad erronea de parametros"
+	loguearC -s $ERR_CANT_PARAM 2
+	exit $ERR_CANT_PARAM
+fi
+
+CONTENIDO=$(cat $1)
+mostrarLog "$CONTENIDO"
+exit 0
