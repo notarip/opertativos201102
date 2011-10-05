@@ -1,0 +1,188 @@
+#!/bin/bash
+
+#LAS VARIABLES PARA LA ESCRITURA EN EL LOG FILE SON:
+#	DESCRIPCION -- why
+#	FECHA -- when
+#	TIPO -- what
+#	USUARIO -- who
+#	NOMBRE_COMANDO -- where
+#
+
+#Codigos de Errores
+ERR_TIPO_MSJ=3
+ERR_PARAM_NO_NUM=1
+ERR_CANT_PARAM=2
+
+#Variables principales
+
+PATH=${PATH}:$PWD 					#VIENE DE AFUERA
+grupo=$PWD						#VIENE DE AFUERA
+LOGSIZE=409600						# tamanio maximo del log (viene de afuera)
+LOGEXT=log						# extension del archivo de log (vendria de afuera)
+LOGDIR=$PWD/logs					# directorio del log file (vendria de afuera)
+ARCH_ERRORES="$grupo/mae/errores.mae"
+
+mostrarAyuda() {
+	echo
+	echo "MODO DE USO: loguearC [OPCIONES] [PARAMETROS]"
+	echo
+	echo "OPCIONES:"
+	echo "-s		Error Estandarizado"
+	echo "-h, --help	Muestra esta pantalla"
+	echo "-v, --version	Informa acerca de la version"
+	echo
+	echo "EJEMPLOS:"
+	echo
+	echo "Error Estandarizado"
+	echo
+	echo "loguearC -s <codigo> <parametro>"
+	echo
+	echo "loguearC -s 4 unArchivo"
+	echo '	Logueo el mensaje de codigo 4 ("archivo no existente") indicando que el archivo que falta es "unArchivo"'
+	echo 
+	echo "loguearC -s 4"
+	echo '	Logueo el mensaje de codigo 4 ("archivo no existente")'
+	echo
+	echo "Error No Estandarizado"
+	echo
+	echo "loguearC <tipo msj> <descripcion>"
+	echo 
+	echo "loguearC E miDesc"
+	echo '	Logueo mi propio msj indicando el tipo(E) y la descripcion(miDesc)'
+	echo
+return 0
+}
+
+
+############################################# COMIENZO DEL SCRIPT ########################################################
+
+# Verificacion de cantidad de parametros y codigos numericos
+
+if [ $# -eq 0 ]
+then
+	echo "Cantidad erronea de parametros"
+	loguearC -s $ERR_CANT_PARAM "como minimo 2"
+	exit $ERR_CANT_PARAM
+fi
+
+if [ $1 = '--help' -o $1 = "-h" ]
+then
+	mostrarAyuda	
+	exit 0
+fi
+
+if [ $1 = "--version" -o $1 = "-v" ]
+then
+	echo
+	echo "loguearC v 1.0"
+	echo "Escrito por Rodolfo Cruz y Martin Ciruzzi"
+	echo
+	exit 0
+fi
+
+if [ $1 = '-s' ]
+then 
+	if [ $# -ne 3 -a $# -ne 2 ] 
+	then
+		echo "Cantidad erronea de parametros"
+		# logueo el error 
+		loguearC -s $ERR_CANT_PARAM 3
+		exit $ERR_CANT_PARAM
+	fi
+	
+	# comprobacion de un codigo numerico
+	expr "$2" + 1 &> /dev/null
+	if [ $? -ne 0 ]
+	then
+		echo "Codigo no numerico"
+		# logueo el error
+		loguearC -s $ERR_PARAM_NO_NUM
+		exit $ERR_PARAM_NO_NUM
+	fi	
+
+else 
+	if [ ! $# = 2 ] 
+	then
+		echo "Cantidad erronea de parametros"
+		# logueo el error 
+		loguearC -s $ERR_CANT_PARAM 3
+		exit $ERR_CANT_PARAM
+	fi
+fi
+
+#averiguacion del nombre de nuestro padre(WHERE?)
+
+NOMBRE_COMANDO=$(ps | sed -n "s/^ *$PPID.*[[:space:]]\([[:graph:]]*\)$/\1/p")
+#NOMBRE_COMANDO=${NOMBRE_COMANDO##*/} #Logre reescribir el SED para que no hiciera falta esto
+#echo "PADRE: $NOMBRE_COMANDO"
+
+ARCH_ESCRITURA="$LOGDIR/$NOMBRE_COMANDO.$LOGEXT"	# ruta del archivo de log
+
+#echo "El log se escribira en: $ARCH_ESCRITURA"		# sacamos la ruta para comprobacion
+
+# vemos con que descripcion se escribe el log(WHY?)
+# vemos el tipo(WHAT?) de log que es
+
+if [ $1 = '-s' ]			# es un error estandarizado
+then
+	#echo "Error estandarizado"
+	TIPO_MSJ=$(sed -n "s/$2;\([^;]*\);[^;]*/\1/p" $ARCH_ERRORES)
+	DESCRIPCION=$(sed -n "s/$2;[^;]*;\([^;]*\)/\1/p" $ARCH_ERRORES)
+	DESCRIPCION=${DESCRIPCION//@/$3} # reemplazo las @ en el msj de error estandarizado por el parametro que se pasa
+	
+else					# es un error no estandarizado
+
+	#echo "Error no estandarizado"
+	TIPO_MSJ=$1	
+	DESCRIPCION=$2
+	if [ ! $TIPO_MSJ = E -a ! $TIPO_MSJ = I -a ! $TIPO_MSJ = A -a ! $TIPO_MSJ = SE ]
+	then
+		loguearC -s $ERR_TIPO_MSJ
+		exit $ERR_TIPO_MSJ
+	fi
+fi
+
+#echo "EL Tipo de msj es: $TIPO_MSJ"
+#echo "La descripcion que lo acompanara es: $DESCRIPCION"
+
+# vemos el usuario (WHO?)
+
+USUARIO=$(whoami)
+
+# comprobamos que existe el directorio del logfile, sino lo creamos
+
+if [ ! -d $LOGDIR ]
+then
+	mkdir -p $LOGDIR
+fi
+
+# vemos la fecha(WHEN?)
+
+FECHA=$(date "+%Y%m%d %H:%M:%S")
+
+# escribimos el log propiamente dicho
+
+echo $FECHA-$USUARIO-$NOMBRE_COMANDO-$TIPO_MSJ-$DESCRIPCION >>$ARCH_ESCRITURA
+
+# verificamos que el log no haya excedido la capacidad maxima
+
+TAMANIO_LOG=$(wc -c < $ARCH_ESCRITURA)
+#echo "El Tamanio del log es: $TAMANIO_LOG"
+
+if [ $TAMANIO_LOG -ge $LOGSIZE ]
+then
+	
+	#echo "Tamanio Excedido"
+	FECHA=$(date "+%Y%m%d %H:%M:%S")
+	#Logueo el msj de Log Excedido en el log del padre
+	echo $FECHA-$USUARIO-$NOMBRE_COMANDO-A-Log Excedido >>$ARCH_ESCRITURA
+	#./loguearC A "Log excedido" # Creo q no es necesario loguear en el log del loguear, era esto lo q traia problemas
+	NUM_LINES=$(wc -l < $ARCH_ESCRITURA)
+	#echo "El Archivo tiene ahora $NUM_LINES lineas"
+	NUM_LINES=$(expr $NUM_LINES / 2)
+	#echo "Quedaran $NUM_LINES lineas"
+	CONTENIDO_A_GUARDAR=$(tail -n $NUM_LINES $ARCH_ESCRITURA)
+	echo "$CONTENIDO_A_GUARDAR" > $ARCH_ESCRITURA
+fi
+
+exit 0
