@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -v logs/*
+rm -v arrivo/*
+rm -v prepa/*
+cp -v mae/pablo.20110909 arrivo/pablo.20120909
+cp -v mae/pablo.20110909 arrivo/pablo.20110909
+cp -v mae/pablo.20110909 arrivo/juan.20120909
+cp -v mae/pablo.20110909 arrivo/jose.20120909
+

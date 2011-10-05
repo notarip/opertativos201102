@@ -1,0 +1,38 @@
+1-Encuestador invalido:
+
+	Mueve (y loguea) el archivo de ARRIVO a RECHAZADOS.
+
+2-Encuestador valido, fecha invalida:
+
+	Mueve (y loguea) el archivo de ARRIVO a RECHAZADOS.
+
+3-Encuestador valido, fecha valida:
+
+	Mueve (y loguea) el archivo de ARRIVO a PREPARADOS.
+
+4-Archivo con formato invalido (ej. zaraza.2222.zaraza):
+
+	Mueve (y loguea) el archivo de ARRIVO a RECHAZADOS.
+
+
+5-SumarC en ejecucion
+
+	se va dormir TSLEEP
+
+6-No hay archivos en preparados
+
+	se va a dormir TSLEEP
+
+7-Hay archivos en preparados, no existe sumarC
+
+	error por pantalla
+
+8-Hay archivos en preparados, existe sumarC
+
+	ejecuta sumarC
+	muestra el pid por pantalla
+
+
+
+
+

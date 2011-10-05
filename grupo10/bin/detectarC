@@ -1,0 +1,354 @@
+#!/bin/bash
+
+
+function debug
+{
+	if [ A != B ];then
+		echo "$1"
+	fi
+}
+
+function log
+{
+	#en $1 recibe el codigo de error
+	#en $2 recibe el parametro opcional
+
+	if [ -n "$2" ];then
+		"$LIBDIR"/loguearC -s "$1" "$2"
+		echo loguear -s "$1" "$2"
+	else
+		"$LIBDIR"/loguearC -s "$1"
+		echo loguear -s "$1"
+	fi
+
+}
+
+
+function verifica_entorno
+{
+#verificacion de variables de ambiente	
+#devuelve $ENTORNO = S si esta ok
+#$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
+	
+	ENTORNO="S"	
+	
+	if [ -z "$ARRIDIR" ];then
+		debug 'no se seteo la variable $ARRIDIR'
+		ENTORNO="N"
+	fi
+
+	if [ -z "$PREPADIR" ];then
+		debug 'no se seteo la variable $PREPADIR'
+		ENTORNO="N"
+	fi
+
+	if [ -z "$RECHADIR" ];then
+		debug 'no se seteo la variable $RECHADIR'
+		ENTORNO="N"
+	fi
+
+	if [ -z "$BINDIR" ];then
+		debug 'no se seteo la variable $BINDIR'
+		ENTORNO="N"
+	fi
+	
+	if [ -z "$LIBDIR" ];then
+		debug 'no se seteo la variable $LIBDIR'
+		ENTORNO="N"
+	fi	
+
+	debug "arribo: $ARRIDIR"
+	debug "prepa: $PREPADIR"
+	debug "recha: $RECHADIR"
+	debug "bin: $BINDIR"
+	debug "lib: $LIBDIR"
+
+	debug "verificando entorno... resultado-> $ENTORNO"
+
+}
+
+function verifica_instancia
+{
+#verifica si existe otra instancia del proceso tanto de detectar como de sumar
+#viene en $1
+#devuelve $INSTANCIA = S si existe una instancia en ejecucion
+	
+	debug "verificando instancia de $1"
+
+	INSTANCIA=N
+
+
+	ps | grep .*$1.* > /dev/null
+
+	if [ $? -eq 0 ];then
+	
+		INSTANCIA=S
+
+	fi
+
+	debug "verificando instancia... -> $INSTANCIA"
+
+}
+
+function recupera_sleep_time
+{
+	#recupera del archivo de conf el tiempo de sleep
+	#en la variable TSLEEP
+	#por ahi ya viene seteado, esperar a que se defina eso
+	debug 'recuperando sleep time ?'
+}
+
+function recupera_archivo_nuevo
+{
+#verifica y recupera del arridir el primero que encuentre
+ARCH=''
+HAY_NUEVO=N
+LISTA=$(find "$ARRIDIR" -type f | sed 's/\(^.\/\)\(.*\)/\2/')
+ 	
+	for ARCH in "$LISTA"
+	do	
+		#$ARCH
+		ARCH=${ARCH##*/} #le saca hasta la ultima barra
+		break
+	done
+
+	if [ -n "$ARCH" ];then
+		
+		HAY_NUEVO=S
+
+	fi
+
+	debug "recuperando archivo... -> $HAY_NUEVO, $ARCH"
+	debug "archivo -> $ARCH"
+
+
+}
+
+
+function verifica_maestro_encuestadores
+{
+	#busca al encuestador en el mae y verifica las fechas
+	#$DATAMAE
+	#encuestadores.mae
+	ENCUESTADOR=$(echo $1 | cut -d . --field=1)
+	FECHA=$(echo $1 | cut -d . --field=2)
+
+	debug "validando encuestador -> $ENCUESTADOR"
+	debug "validando fecha -> $FECHA"
+
+	
+	if [ ! -e "$DATAMAE/encuestadores.mae" ];then
+
+		#TODO ver que hacer, para mi es error fatal
+		debug "no se encontro -> $DATAMAE/encuestadores.mae"
+		exit 1		
+	fi
+	
+
+	REG=$(cat "$DATAMAE/encuestadores.mae" | grep ".*$ENCUESTADOR.*")
+
+		
+	if [ -n "$REG" ];then
+	
+		FECHAD=$(echo "$REG" | cut -d , --field=4)
+		FECHAA=$(echo "$REG" | cut -d , --field=5)
+
+		debug "fecha desde -> $FECHAD"
+		debug "fecha hasta -> $FECHAA"
+
+		if [ "$FECHAD" -le "$FECHA" ] && [ "$FECHAA" -ge "$FECHA" ];then
+
+			ARC_VALIDO=S
+		
+		else
+
+			ARC_VALIDO=N
+			ERR_ARCH="7" #Fechas de vigencia invalidas
+		
+		fi
+
+	else
+
+		ARC_VALIDO=N
+		ERR_ARCH="8" #Encuestador invalido
+
+	fi
+
+	debug "encuestador valido ? -> $ARC_VALIDO"
+
+}
+
+function verifica_archivo
+{
+	#verifica que el nombre del archivo sea valido y 
+	#separa en dos variables encuestador y fecha
+	#llama a verifica_maestro_encuestadores
+
+	echo $1 | grep '^[^.]*\.[^.]*$' > /dev/null
+	
+	if [ $? -eq 0 ];then
+	
+		#cumple con la regular
+		verifica_maestro_encuestadores $1	
+
+	else
+
+		#no cumple
+		ARC_VALIDO=N
+		ERR_ARCH="9" #nombre del archivo invalido
+
+	fi
+
+
+}
+
+
+function llama_mover
+{
+
+	#TODO revisar llamada
+
+	debug "moviendo de $1 --> $2"
+	
+	#le deja solo el directorio de destino
+	DESTINO=${2%/*}
+
+	log "$3" "$ARCH"
+
+	"$LIBDIR/moverC" "$1" "$DESTINO"
+		
+}
+
+function mover_archivo_ok
+{
+	#mueve el archivo al folder de preparados
+	#generando el log correspondiente
+
+	ERR_ARCH="10"
+	llama_mover "$ARRIDIR/$ARCH" "$PREPADIR/$ARCH" "$ERR_ARCH"
+
+}
+
+function mover_archivo_rech
+{
+	#mueve el archivo al folder de rechazados
+	#generando el log correspondiente
+
+	llama_mover "$ARRIDIR/$ARCH" "$RECHADIR/$ARCH" "$ERR_ARCH"
+
+}
+
+function verifica_preparados
+{
+
+	HAY_PREPA='N'
+	LISTA_PREPA=''
+	LISTA_PREPA=$(find "$PREPADIR" -type f  | sed 's/\(^ *\)\(.*$\)/\2/')
+	#LISTA_PREPA=$(ls "$PREPADIR")
+
+	debug ">>$LISTA_PREPA<<"
+
+	if [ -n "$LISTA_PREPA" ];then
+	
+		HAY_PREPA='S'
+	
+	fi
+
+	debug "hay preparados ? $HAY_PREPA"
+
+
+}
+
+function llama_a_sumar
+{
+	#llama al componente sumar siempre que no este activo
+	#para lo que usa verifica_instancia verifica_instancia 'sumarC'
+	
+	verifica_instancia 'sumarC'
+	verifica_preparados
+
+	if [ $INSTANCIA != S ] && [ $HAY_PREPA = S ];then
+		#"BINDIR/sumarC &"
+		debug 'llamando a sumarC...'
+	else
+		debug "sumar activo --> $INSTANCIA, hay preparados --> $HAY_PREPA"
+	fi
+	
+}
+
+function terminar
+{
+	#como termina cuando lo stopean
+	exit 0
+}
+
+
+debug arrancando...
+
+
+#catcheo de las señales
+
+trap terminar SIGTERM
+
+#####programa principal######
+
+verifica_entorno 
+
+if [ $ENTORNO != S ];then
+	ERR="11" #Entorno no inicializado
+	log $ERR ""
+	exit $ERR_ENTORNO
+fi
+
+#verifica_instancia 'detectarC'
+#if [ $INSTANCIA = S ];then
+#	exit $ERR_INSTANCIA
+#fi
+
+#TSLEEP
+recupera_sleep_time
+
+CORTE=N
+
+while [ $CORTE = N ];do
+	
+	debug "arranco el demonio con  $TSLEEP seg. "
+
+	recupera_archivo_nuevo
+
+	while [ $HAY_NUEVO = S ];do
+
+		verifica_archivo $ARCH
+		
+		if [ $ARC_VALIDO = S ];then
+			mover_archivo_ok
+		else
+			mover_archivo_rech
+		fi
+
+		recupera_archivo_nuevo
+		
+	done
+	
+	llama_a_sumar
+
+	debug "durmiendo $TSLEEP seg."
+	
+	sleep $TSLEEP
+done
+
+
+
+################################
+
+#$ archivo=./usr/apps/bin/cmd.exe
+#$ echo ${archivo%/*}
+#./usr/apps/bin # le saco desde la ltima /
+#$ echo ${archivo%%/*}
+#. # le saco desde la primera /
+#$ echo ${archivo#*/}
+#usr/apps/bin/cmd.exe # le saco hasta la primera /
+#$ echo ${archivo##*/}
+#cmd.exe # le saco hasta la ltima /
+
+
