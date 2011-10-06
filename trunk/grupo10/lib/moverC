@@ -6,15 +6,28 @@ IFS=$'\n'
 ORIGEN=$1
 DESTINO=$2
 #PROCESO=$3
+ERR_ARCH_NO_EXISTE=4
+ERR_DIR_NO_EXISTE=5
+ERR_CANT_PARAM=2
 
+LOGEXT="log" #VIENE DE AFUERA
+PATH=${PATH}:$PWD #VIENE DE AFUERA
 
+if [ $# -ne 3 -a $# -ne 2 ]
+then
+	echo "Cantidad erronea de parametros"
+	loguearC -s $ERR_CANT_PARAM "2 o 3"
+	exit $ERR_CANT_PARAM
+fi
 if [ ! -f "$ORIGEN" ];then
-echo "Archivo origen inexistente"
-exit 1
+	echo "Archivo origen inexistente"
+	loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
+	exit $ERR_ARCH_NO_EXISTE
 fi
 if [ ! -d "$DESTINO" ];then
-echo "Directorio destino inexistente"
-exit 2
+	echo "Directorio destino inexistente"
+	loguearC -s $ERR_DIR_NO_EXISTE $DESTINO
+	exit $ERR_DIR_NO_EXISTE
 fi
 
 
@@ -22,10 +35,11 @@ NOMBRE_ARCHIVO=${ORIGEN##*/}
 #echo "VARIABLE DEPURADA $DEPURADA"
 
 
-COPIA=$DESTINO/$ORIGEN
+COPIA=$DESTINO/$NOMBRE_ARCHIVO
 
 if [ ! -f "$COPIA" ];then
 	#echo "MOVER STANDARD"
+
 	mv $ORIGEN $DESTINO/
 else
 	DUPLICADO='/DUP'	
