@@ -184,7 +184,7 @@ function verifica_archivo
 	#separa en dos variables encuestador y fecha
 	#llama a verifica_maestro_encuestadores
 
-	echo $1 | grep '^[^.]*\.[^.]*$' > /dev/null
+	echo $1 | grep '^[^.]*\.[0-9]{8}$' > /dev/null
 	
 	if [ $? -eq 0 ];then
 	
@@ -243,7 +243,7 @@ function verifica_preparados
 
 	HAY_PREPA='N'
 	LISTA_PREPA=''
-	LISTA_PREPA=$(find "$PREPADIR" -type f  | sed 's/\(^ *\)\(.*$\)/\2/')
+	LISTA_PREPA=$(find "$PREPADIR" -maxdepth 1 -type f  | sed 's/\(^ *\)\(.*$\)/\2/')
 	#LISTA_PREPA=$(ls "$PREPADIR")
 
 	debug ">>$LISTA_PREPA<<"
