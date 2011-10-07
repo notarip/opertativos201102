@@ -3,7 +3,10 @@
 
 function definir_variables
 {
-	export GRUPO="/home/pablo/so/grupo10"
+	
+	GRUPO=$(pwd)
+	GRUPO=${GRUPO%/*}
+	export GRUPO
 	export ARRIDIR="$GRUPO/arrivo"
 	export PREPADIR="$GRUPO/prepa"
 	export RECHADIR="$GRUPO/recha"
@@ -11,8 +14,9 @@ function definir_variables
 	export DATAMAE="$GRUPO/mae"
 	export LIBDIR="$GRUPO/lib"
 	export PATH="$BINDIR":"$LIBDIR":.:$PATH
-	export TSLEEP=120
+	export TSLEEP=60
 
+	chmod 777 "$GRUPO"/*	
 	chmod 777 "$BINDIR"/*
 	chmod 777 "$LIBDIR"/*
 
