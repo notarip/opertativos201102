@@ -1,6 +1,128 @@
 #!/bin/bash
 #$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
 
+
+function eco
+{
+	echo -e "\E["$2"m"$1"\033[0m"
+}
+
+
+function debug
+{
+	if [ A != B ];then
+		echo "$1"
+	fi
+}
+
+
+function log
+{
+	#en $1 recibe el codigo de error
+	#en $2 recibe el parametro opcional
+	
+	#se evalua que exista la lib de logueo
+	echo $2 | grep .*loguearC.* > /dev/null
+
+	if [ "$SIN_LOG" != "S" ];then 
+		if [ -n "$2" ];then
+			"$LIBDIR"/loguearC -s "$1" "$2"
+			echo loguear -s "$1" "$2"
+		else
+			"$LIBDIR"/loguearC -s "$1"
+			echo loguear -s "$1"
+		fi
+	fi
+}
+
+
+function verifica_instancia
+{
+#verifica si existe otra instancia del proceso tanto de detectar como de sumar
+#viene en $1
+#devuelve $INSTANCIA = S si existe una instancia en ejecucion
+
+	INSTANCIA=N
+
+	ps | grep .*$1.* > /dev/null
+
+	if [ $? -eq 0 ];then
+		INSTANCIA="S"
+	fi
+}
+
+function preguntar
+{
+	
+	echo -e "Ya se encuentran seteadas las variables: \n"
+	echo -e "$SETEADAS"
+	echo "Desea continuar con la ejecición (S/N):"
+	
+	OK=''
+	while [ "$OK" != "S" ]
+	do
+		read RTA
+
+		if [ "$RTA" = "S" ] || [ "$RTA" = "s" ];then
+			CONTINUA="S"
+			OK="S"	
+		else
+			if [ "$RTA" = "N" ] || [ "$RTA" = "n" ];then
+				CONTINUA="N"
+				OK="S"
+			fi
+		fi
+	done
+
+}
+
+function verificar_variables
+{
+	CONTINUA=''
+	SETEADA=''
+	SETEADAS=''
+
+	if [ -n "$ARRIDIR" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$ARRIDIR :'"$ARRIDIR\n"
+	fi
+
+
+	if [ -n "$PREPADIR" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$PREPADIR :'"$PREPADIR\n"
+	fi
+
+	if [ -n "$RECHADIR" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$RECHADIR :'"$RECHADIR\n"
+	fi
+
+	if [ -n "$BINDIR" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$BINDIR :'"$BINDIR\n"
+	fi
+
+	if [ -n "$DATAMAE" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$DATAMAE :'"$DATAMAE\n"
+	fi
+
+	if [ -n "$LIBDIR" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$LIBDIR :'"$LIBDIR\n"
+	fi
+
+
+	if [ "$SETEADA" = "S" ];then
+		preguntar
+	else
+		CONTINUA="S"	
+	fi
+
+}
+
+
 function definir_variables
 {
 	
@@ -20,6 +142,170 @@ function definir_variables
 	chmod 777 "$BINDIR"/*
 	chmod 777 "$LIBDIR"/*
 
+	MAESTROS="encuestadores.mae preguntas.mae encuestas.mae"
+	COMANDOS="detectarC sumarC listarC"
+	LIBRERIAS="loguearC mirarC moverC"
+
 }
 
-definir_variables
+
+function verificar_comandos
+{
+	#verificacion de los comandos
+	#detectarC, sumarC, listarC
+
+	ERR=''
+	ERR_MSG=''
+
+	if [ ! -f "$BINDIR/detectarC" ];then
+		ERR=13
+		ERR_MSG="$ERR_MSG detectarC"
+	fi
+
+	if [ ! -f "$BINDIR/sumarC" ];then
+		ERR=13
+		ERR_MSG="$ERR_MSG sumarC"
+	fi
+
+	if [ ! -f "$BINDIR/listarC" ];then
+		ERR=13
+		ERR_MSG="$ERR_MSG listarC"
+	fi
+
+	SIN_LOG=''
+	if [ ! -f "$LIBDIR/loguearC" ];then 
+		SIN_LOG="S"
+	else
+		if [ ! -f "$DATAMAE/errores.mae" ];then
+			SIN_LOG="S"			
+		fi
+	fi
+
+	if [ -n "$ERR" ];then
+		log "$ERR" "$ERR_MSG"
+		INFO="$INFO""Error en los comandos: $ERR_MSG\n"
+	fi
+
+}
+
+
+function verificar_maestros
+{
+	#verificacion existencia de los maestros
+	
+
+	ERR=''
+	ERR_MSG=''
+
+
+	if [ ! -f "$DATAMAE/errores.mae" ];then
+		ERR=12
+		ERR_MSG="$ERR_MSG errores.mae"
+	fi
+
+	if [ ! -f "$DATAMAE/encuestadores.mae" ];then
+		ERR=12
+		ERR_MSG="$ERR_MSG encuestadores.mae"
+	fi
+
+	if [ ! -f "$DATAMAE/encuestas.mae" ];then
+		ERR=12
+		ERR_MSG="$ERR_MSG encuestas.mae"
+	fi
+
+	if [ ! -f "$DATAMAE/preguntas.mae" ];then
+		ERR=12
+		ERR_MSG="$ERR_MSG preguntas.mae"
+	fi
+
+	if [ -n "$ERR" ];then
+		log "$ERR" "$ERR_MSG"
+		INFO="$INFO""Error en los archivos maestros: $ERR_MSG \n"	
+	fi
+
+}
+
+
+function verificar_librerias
+{
+	#verifica la existencia de las librerias
+	#loguearC, mirarC, moverC
+
+	ERR=''
+	ERR_MSG=''
+
+
+	if [ ! -f "$LIBDIR/loguearC" ];then
+		ERR=14
+		ERR_MSG="$ERR_MSG loguearC"
+	fi
+
+	if [ ! -f "$LIBDIR/mirarC" ];then
+		ERR=14
+		ERR_MSG="$ERR_MSG mirarC"
+	fi
+
+	if [ ! -f "$LIBDIR/moverC" ];then
+		ERR=14
+		ERR_MSG="$ERR_MSG moverC"
+	fi
+
+
+	if [ -n "$ERR" ];then
+		log "$ERR" "$ERR_MSG"
+		INFO="$INFO""Error en las librerias: $ERR_MSG \n"
+	fi
+
+
+}
+
+
+
+function llamada_detectar
+{
+
+	verifica_instancia "detectarC"
+ 	if [ $INSTANCIA != S ];then
+		#"$BINDIR/detectarC &"
+		debug "llamando a detectar..."
+	else
+		debug "detectar esta corriendo..."
+	fi
+
+}
+
+
+########################PRINCIPAL########################
+bash
+
+
+RED=31
+GRE=32
+BLU=34
+YEL=33
+STA=00
+
+INFO=''
+
+verificar_variables
+
+if [ "$CONTINUA" = "S" ];then
+
+	definir_variables
+
+	verificar_comandos
+
+	verificar_librerias
+
+	verificar_maestros
+
+
+	if [ -n "$INFO" ];then
+		eco "No se pudo iniciar el sistema consultar:"	"$GRE"
+		eco "$INFO" "$YEL"
+		eco "Se aconseja reinstalar la aplicación." $GRE
+	else
+		llamada_detectar
+	fi
+
+fi
