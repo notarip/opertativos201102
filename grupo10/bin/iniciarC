@@ -272,11 +272,12 @@ function llamada_detectar
 		debug "detectar esta corriendo..."
 	fi
 
+	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=2)
+
 }
 
 
-########################PRINCIPAL########################
-bash
+########################PRINCIPAL######################
 
 
 RED=31
@@ -305,7 +306,11 @@ if [ "$CONTINUA" = "S" ];then
 		eco "$INFO" "$YEL"
 		eco "Se aconseja reinstalar la aplicación." $GRE
 	else
+		verificar_variables		
+		eco "Inicialización del Ambiente Concluida \n" "$BLU"
+		eco "Ambiente: \n $SETEADAS" "$YEL"
 		llamada_detectar
+		eco "Demonio corriendo bajo el Nro.: $PID"
 	fi
 
 fi
