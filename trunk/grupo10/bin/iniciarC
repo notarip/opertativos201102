@@ -81,6 +81,7 @@ function verificar_variables
 	CONTINUA=''
 	SETEADA=''
 	SETEADAS=''
+	NO_ASK=$1
 
 	if [ -n "$ARRIDIR" ];then
 		SETEADA="S"
@@ -114,7 +115,7 @@ function verificar_variables
 	fi
 
 
-	if [ "$SETEADA" = "S" ];then
+	if [ "$SETEADA" = "S" ] && [ "$NO_ASK" = "S" ];then
 		preguntar
 	else
 		CONTINUA="S"	
@@ -266,7 +267,7 @@ function llamada_detectar
 
 	verifica_instancia "detectarC"
  	if [ $INSTANCIA != S ];then
-		#"$BINDIR/detectarC &"
+		detectarC  &
 		debug "llamando a detectar..."
 	else
 		debug "detectar esta corriendo..."
@@ -306,11 +307,11 @@ if [ "$CONTINUA" = "S" ];then
 		eco "$INFO" "$YEL"
 		eco "Se aconseja reinstalar la aplicación." $GRE
 	else
-		verificar_variables		
+		verificar_variables "S"		
 		eco "Inicialización del Ambiente Concluida \n" "$BLU"
-		eco "Ambiente: \n $SETEADAS" "$YEL"
+		eco "Ambiente: \n$SETEADAS" "$YEL"
 		llamada_detectar
-		eco "Demonio corriendo bajo el Nro.: $PID"
+		eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
 	fi
 
 fi
