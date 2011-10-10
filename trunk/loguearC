@@ -127,7 +127,7 @@ else					# es un error no estandarizado
 	#echo "Error no estandarizado"
 	NOMBRE_COMANDO=$(echo $1 | tr [:upper:] [:lower:])	
 	TIPO_MSJ=$2	
-	DESCRIPCION=$(echo $3 | tr -s [:space:])
+	DESCRIPCION=$(echo "$3" | tr -s [:space:])
 	if [ ! $TIPO_MSJ = E -a ! $TIPO_MSJ = I -a ! $TIPO_MSJ = A -a ! $TIPO_MSJ = SE ]
 	then
 		loguearC -s loguearC $ERR_TIPO_MSJ
