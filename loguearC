@@ -159,7 +159,7 @@ ARCH_ESCRITURA="$LOGDIR/$NOMBRE_COMANDO.$LOGEXT"	# ruta del archivo de log
 
 # escribimos el log propiamente dicho
 
-echo $FECHA-$USUARIO-$NOMBRE_COMANDO-$TIPO_MSJ-$DESCRIPCION >>$ARCH_ESCRITURA
+echo $FECHA-$USUARIO-$NOMBRE_COMANDO-$TIPO_MSJ-"$DESCRIPCION" >>$ARCH_ESCRITURA
 
 # verificamos que el log no haya excedido la capacidad maxima
 
