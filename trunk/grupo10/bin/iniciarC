@@ -2,6 +2,8 @@
 #$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
 
 
+#TODO: armar una funcion que recupere la propiedad pedida desde el conf
+
 function eco
 {
 	echo -e "\E["$2"m"$1"\033[0m"
@@ -114,7 +116,7 @@ function verificar_variables
 		SETEADAS="$SETEADAS"'$LIBDIR :'"$LIBDIR\n"
 	fi
 	
-	if [ -n "$LOGDIR" };then
+	if [ -n "$LOGDIR" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$LOGDIR :'"$LOGDIR\n"
 	fi
@@ -141,9 +143,15 @@ function definir_variables
 	export DATAMAE="$GRUPO/mae"
 	export LIBDIR="$GRUPO/lib"
 	export LOGDIR="$GRUPO/log"
-	export PATH="$BINDIR":"$LIBDIR":.:$PATH
 	export TSLEEP=60
 
+	echo "$PATH" | grep .*"$BINDIR".*"$LIBDIR".* > /dev/null
+
+	if [ "$?" != "0" ];then
+		export PATH="$BINDIR":"$LIBDIR":.:$PATH
+	fi
+
+	
 	chmod 777 "$GRUPO"/*	
 	chmod 777 "$BINDIR"/*
 	chmod 777 "$LIBDIR"/*
@@ -272,7 +280,7 @@ function llamada_detectar
 
 	verifica_instancia "detectarC"
  	if [ $INSTANCIA != S ];then
-		detectarC  &
+		#detectarC  &
 		debug "llamando a detectar..."
 	else
 		debug "detectar esta corriendo..."
