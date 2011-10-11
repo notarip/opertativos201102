@@ -14,10 +14,10 @@ function log
 	#en $2 recibe el parametro opcional
 
 	if [ -n "$2" ];then
-		"$LIBDIR"/loguearC -s "$1" "$2"
+		"$LIBDIR"/loguearC -s "detectarC" "$1" "$2"
 		echo loguear -s "$1" "$2"
 	else
-		"$LIBDIR"/loguearC -s "$1"
+		"$LIBDIR"/loguearC -s "detectarC" "$1"
 		echo loguear -s "$1"
 	fi
 
