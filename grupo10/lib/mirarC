@@ -9,14 +9,14 @@ COLOR_E=31	#Rojo
 
 # Codigos de errores
 
-ERR_ARCH_NO_EXISTE=4
-ERR_ARCH_INVALIDO=150
+ERR_LOG_NO_EXISTE=150
 ERR_TIPO_MSJ=3
 ERR_PARAM_NO_NUM=1
 ERR_CANT_PARAM=2
 
 LOGEXT="log" #VIENE DE AFUERA
 PATH=${PATH}:$PWD #VIENE DE AFUERA
+LOGDIR=$PWD/logs # directorio del log file (vendria de afuera)
 
 # MOSTRARLOG: Realiza el formateo de las lineas del log que pasaron por el filtro #
 
@@ -86,7 +86,7 @@ return 0
 if [ $# -eq 0 ]
 then
 	echo "Cantidad erronea de parametros"
-	loguearC -s $ERR_CANT_PARAM "como minimo 2"
+	loguearC -s mirarC $ERR_CANT_PARAM "como minimo 2"
 	exit $ERR_CANT_PARAM
 fi
 
@@ -104,20 +104,15 @@ then
 	exit 0
 fi
 
-if [ ! -e $BASH_ARGV ] #BASH_ARGV es el ultimo argumento pasado
-then
-	echo "Archivo Inexistente"
-	loguearC -s $ERR_ARCH_NO_EXISTE $BASH_ARGV
-	exit $ERR_ARCH_NO_EXISTE
-fi
+COMANDO=$(echo $BASH_ARGV | tr [:upper:] [:lower:])
 
-EXTENSION=${BASH_ARGV##*[.]}
+ARCHIVO_LOG="$LOGDIR/$COMANDO.$LOGEXT"
 
-if [ ! $EXTENSION = $LOGEXT ]
+if [ ! -e $ARCHIVO_LOG ]
 then
-	echo "Archivo Invalido"
-	loguearC E "Archivo Invalido"
-	exit $ERR_ARCH_INVALIDO
+	echo "No se encontraron logs para el comando especificado"
+	loguearC mirarC E "No se encontraron logs para el comando especificado"
+	exit $ERR_LOG_NO_EXISTE
 fi
 
 # Mostrar los ultimos N registros del log
@@ -127,19 +122,19 @@ then
 	expr "$2" + 1 &> /dev/null
 	if [ $? -eq 0 ]
 	then
-		CONTENIDO=$(tail -n $2 $3)
+		CONTENIDO=$(tail -n $2 $ARCHIVO_LOG)
 		mostrarLog "$CONTENIDO"
 		exit 0
 	else
 		echo "Parametro no Numerico"
-		loguearC -s $ERR_PARAM_NO_NUM
+		loguearC -s mirarC $ERR_PARAM_NO_NUM
 		exit $ERR_PARAM_NO_NUM
 	fi
 
 	if [ $# -ne 3 ] 
 	then
 		echo "Cantidad erronea de parametros"
-		loguearC -s $ERR_CANT_PARAM 3
+		loguearC -s mirarC $ERR_CANT_PARAM 3
 		exit $ERR_CANT_PARAM
 	fi
 fi
@@ -160,11 +155,11 @@ then
 			fi
 		else
 			echo "Tipo de Mensaje Invalido"
-			loguearC -s $ERR_TIPO_MSJ
+			loguearC -s mirarC $ERR_TIPO_MSJ
 			exit $ERR_TIPO_MSJ
 		fi
 	done
-	CONTENIDO=$(grep ".*-[$TIPOS]E\?-[^-]*$" $BASH_ARGV)
+	CONTENIDO=$(grep ".*-[$TIPOS]E\?-[^-]*$" $ARCHIVO_LOG)
 	mostrarLog "$CONTENIDO"
 	exit 0
 fi
@@ -176,11 +171,11 @@ then
 	if [ $# -ne 3 ] 
 	then
 		echo "Cantidad erronea de parametros"
-		loguearC -s $ERR_CANT_PARAM 3
+		loguearC -s mirarC $ERR_CANT_PARAM 3
 		exit $ERR_CANT_PARAM
 	fi
 	
-	CONTENIDO=$(grep "$2" $3)
+	CONTENIDO=$(grep -i "$2" $ARCHIVO_LOG)
 	mostrarLog "$CONTENIDO"
 	exit 0
 
@@ -191,10 +186,10 @@ fi
 if [ $# -ne 1 ]
 then
 	echo "Cantidad erronea de parametros"
-	loguearC -s $ERR_CANT_PARAM 2
+	loguearC -s mirarC $ERR_CANT_PARAM 2
 	exit $ERR_CANT_PARAM
 fi
 
-CONTENIDO=$(cat $1)
+CONTENIDO=$(cat $ARCHIVO_LOG)
 mostrarLog "$CONTENIDO"
 exit 0
