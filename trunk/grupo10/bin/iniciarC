@@ -26,7 +26,7 @@ function log
 
 	if [ "$SIN_LOG" != "S" ];then 
 		if [ -n "$2" ];then
-			"$LIBDIR"/loguearC -s iniciarC "$1" "$2"
+			"$LIBDIR"/loguearC -s "iniciarC" "$1" "$2"
 			echo loguear -s "$1" "$2"
 		else
 			"$LIBDIR"/loguearC -s "$1"
