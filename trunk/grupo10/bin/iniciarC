@@ -113,7 +113,11 @@ function verificar_variables
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$LIBDIR :'"$LIBDIR\n"
 	fi
-
+	
+	if [ -n "$LOGDIR" };then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$LOGDIR :'"$LOGDIR\n"
+	fi
 
 	if [ "$SETEADA" = "S" ] && [ "$NO_ASK" = "S" ];then
 		preguntar
@@ -136,6 +140,7 @@ function definir_variables
 	export BINDIR="$GRUPO/bin"
 	export DATAMAE="$GRUPO/mae"
 	export LIBDIR="$GRUPO/lib"
+	export LOGDIR="$GRUPO/log"
 	export PATH="$BINDIR":"$LIBDIR":.:$PATH
 	export TSLEEP=60
 
