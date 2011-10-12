@@ -1,0 +1,59 @@
+#!/bin/bash
+#$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
+
+function eco
+{
+	echo -e "\E["$2"m"$1"\033[0m"
+}
+
+function verifica_instancia
+{
+#verifica si existe otra instancia del proceso tanto de detectar como de sumar
+#viene en $1
+#devuelve $INSTANCIA = S si existe una instancia en ejecucion
+
+	INSTANCIA=N
+
+	ps | grep .*$1.* > /dev/null
+
+	if [ $? -eq 0 ];then
+		INSTANCIA="S"
+	fi
+}
+function llamada_detectar
+{
+
+	verifica_instancia "detectarC"
+ 	if [ $INSTANCIA != S ];then
+		./detectarC  &
+		echo "no hay demonio corriendo..."
+	else
+		echo "hay que parar el demonio..."
+		
+	fi
+	PID=$(echo $(ps | awk '/detectarC/ && !/awk/ { print $1}'))
+
+	echo "El valor de PID es: $PID"
+	eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
+	
+	kill -TERM $PID
+	echo "Demonio Terminado"
+#	PID=$(echo ${file_base%}|awk -F . '{print $NF}')
+#	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=2)
+}
+
+
+########################PRINCIPAL######################
+
+
+RED=31
+GRE=32
+BLU=34
+YEL=33
+STA=00
+
+INFO=''
+
+llamada_detectar
+
+
