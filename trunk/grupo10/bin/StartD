@@ -25,9 +25,10 @@ function verifica_instancia
 function llamada_detectar
 {
 
+	
 	verifica_instancia "detectarC"
  	if [ $INSTANCIA != S ];then
-		./detectarC  &
+		$RUNDIRECTORY/detectarC  &
 		echo "llamando a detectar..."
 	else
 		echo "detectar esta corriendo..."
@@ -50,6 +51,7 @@ YEL=33
 STA=00
 
 INFO=''
+declare -x RUNDIRECTORY="${0%%/*}"
 
 llamada_detectar
 eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
