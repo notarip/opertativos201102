@@ -5,7 +5,7 @@ IFS=$'\n'
 
 ORIGEN=$1
 DESTINO=$2
-#PROCESO=$3
+PROCESO=$3
 ERR_ARCH_NO_EXISTE=4
 ERR_DIR_NO_EXISTE=5
 ERR_CANT_PARAM=2
@@ -13,20 +13,57 @@ ERR_CANT_PARAM=2
 LOGEXT="log" #VIENE DE AFUERA
 PATH=${PATH}:$PWD #VIENE DE AFUERA
 
+
+mostrarAyuda() {
+	echo
+	echo "MODO DE USO: moverC [PATH DEL ACHIVO A MOVER] [PATH DEL DIRECTORIO DESTINO] [NOMBRE DEL COMANDO QUE LO ESTA INVOCANDO]"
+	echo
+	echo "OPCIONES:"
+	echo "-h, --help	Muestra esta pantalla"
+	echo
+	echo "EJEMPLOS:"
+	echo
+	echo "moverC <path del archivo a mover> <path del directorio destino>"
+	echo
+	echo "moverC carpeta/archivo.txt otracarpeta"
+	echo '	Se mueve el archivo.txt a el directorio otracarpeta mediante una llamada por consola'
+	echo
+	echo "moverC -s <path del archivo a mover> <path del directorio destino> <nombre del comando que lo esta invocando>"
+	echo
+	echo "moverC carpeta/archivo.txt otracarpeta detectarC"
+	echo '	Se mueve el archivo.txt a el directorio otracarpeta mediante el comando detectarC'
+	echo
+
+return 0
+}
+
+
+############################################# COMIENZO DEL SCRIPT ########################################################
+
+if [ $1 = '--help' -o $1 = "-h" ]
+then
+	mostrarAyuda	
+	exit 0
+fi
+
+declare -x RUNDIRECTORY="${0%%/*}"
+#echo "el rundirectory es $RUNDIRECTORY"
+
+
 if [ $# -ne 3 -a $# -ne 2 ]
 then
 	echo "Cantidad erronea de parametros"
-	loguearC -s $ERR_CANT_PARAM "2 o 3"
+	$RUNDIRECTORY/loguearC -s $ERR_CANT_PARAM "2 o 3"
 	exit $ERR_CANT_PARAM
 fi
 if [ ! -f "$ORIGEN" ];then
 	echo "Archivo origen inexistente"
-	loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
+	$RUNDIRECTORY/loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
 	exit $ERR_ARCH_NO_EXISTE
 fi
 if [ ! -d "$DESTINO" ];then
 	echo "Directorio destino inexistente"
-	loguearC -s $ERR_DIR_NO_EXISTE $DESTINO
+	$RUNDIRECTORY/loguearC -s $ERR_DIR_NO_EXISTE $DESTINO
 	exit $ERR_DIR_NO_EXISTE
 fi
 
@@ -55,7 +92,9 @@ else
 		CHECKDIRAUX=$CHECKDIR
 	#	echo "DIRECCION DUPLICADO $CHECKDIR"
 		CONTADOR=0
-		while [ -f "$CHECKDIR" ]; do
+	# Evaluo si el archivo duplicado con ese nombre si existe. En caso de exisitr le agrego una terminacion
+	# que no se encuentre utilizada
+		while [ -f "$CHECKDIR" ]; do 
 	#		echo "ENTRO AL WHILE"	
 	#		echo "PATH A PUNTO DE MIRAR: $CHECKDIR"
 			CONTADOR=`expr $CONTADOR + 1`
@@ -68,4 +107,11 @@ else
 		mv $RENOMBRADO $CARPETA_DUPLICADO/
 	fi
 fi
-
+if [ $# -eq 3 ]
+then
+	$RUNDIRECTORY/loguearC "moverC" I "Se movio el archivo exitosamente mediante el comando $3"
+else
+	$RUNDIRECTORY/loguearC "moverC" I "Se movio el archivo exitosamente desde la consola"
+fi
+echo "Archivo movido exitosamente"
+exit 0
