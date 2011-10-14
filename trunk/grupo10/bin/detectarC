@@ -1,9 +1,6 @@
 #!/bin/bash
 
 
-#TODO: verificar bien el formato del nombre del archivo
-
-
 function debug
 {
 	if [ A != B ];then
@@ -186,9 +183,8 @@ function verifica_archivo
 	#verifica que el nombre del archivo sea valido y 
 	#separa en dos variables encuestador y fecha
 	#llama a verifica_maestro_encuestadores
-	#pablo.20110909
 
-	echo $1 | grep '^[^.]*\.[0-9]*$' > /dev/null
+	echo $1 | grep '^[A-Za-z]*\.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]$' > /dev/null
 	
 	if [ $? -eq 0 ];then
 	
@@ -272,7 +268,7 @@ function llama_a_sumar
 	verifica_preparados
 
 	if [ $INSTANCIA != S ] && [ $HAY_PREPA = S ];then
-		#"BINDIR/sumarC &"
+		sumarC &
 		debug 'llamando a sumarC...'
 	else
 		debug "sumar activo --> $INSTANCIA, hay preparados --> $HAY_PREPA"
@@ -283,6 +279,7 @@ function llama_a_sumar
 function terminar
 {
 	#como termina cuando lo stopean
+	debug "me quieren matar !!!!"
 	exit 0
 }
 

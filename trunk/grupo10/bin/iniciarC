@@ -2,8 +2,6 @@
 #$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
 
 
-#TODO: armar una funcion que recupere la propiedad pedida desde el conf
-
 function eco
 {
 	echo -e "\E["$2"m"$1"\033[0m"
@@ -65,11 +63,11 @@ function preguntar
 	do
 		read RTA
 
-		if [ "$RTA" = "S" ] || [ "$RTA" = "s" ];then
+		if [[ "$RTA" = "S"  || "$RTA" = "s" ]];then
 			CONTINUA="S"
 			OK="S"	
 		else
-			if [ "$RTA" = "N" ] || [ "$RTA" = "n" ];then
+			if [[ "$RTA" = "N" || "$RTA" = "n" ]];then
 				CONTINUA="N"
 				OK="S"
 			fi
@@ -116,12 +114,12 @@ function verificar_variables
 		SETEADAS="$SETEADAS"'$LIBDIR :'"$LIBDIR\n"
 	fi
 	
-	if [ -n "$LOGDIR" ];then
+	if [ -n "$LOGDIR" };then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$LOGDIR :'"$LOGDIR\n"
 	fi
 
-	if [ "$SETEADA" = "S" ] && [ "$NO_ASK" = "S" ];then
+	if [[ "$SETEADA" = "S" && "$NO_ASK" = "S" ]];then
 		preguntar
 	else
 		CONTINUA="S"	
@@ -130,20 +128,52 @@ function verificar_variables
 }
 
 
+function resolver_path
+{
+	GRUPO=$(pwd)
+	GRUPO="$GRUPO/$0"
+	GRUPO=$(echo $GRUPO | sed -n "s/\(.*\)\(\/bin\/.*\)/\1/p")
+}
+
+
+function recupera_propiedad
+{
+
+	PROPIEDAD=$(cat "$GRUPO/conf/InstalarC.conf" | grep "^$1" | cut -d ' ' --fields=3,4,5,6)
+
+}
+
 function definir_variables
 {
-	
-	GRUPO=$(pwd)
-	GRUPO=${GRUPO%/*}
-	export GRUPO
-	export ARRIDIR="$GRUPO/arrivo"
-	export PREPADIR="$GRUPO/prepa"
-	export RECHADIR="$GRUPO/recha"
-	export BINDIR="$GRUPO/bin"
-	export DATAMAE="$GRUPO/mae"
-	export LIBDIR="$GRUPO/lib"
-	export LOGDIR="$GRUPO/log"
-	export TSLEEP=60
+
+	recupeta_propiedad "CURRDIR"
+	export CURRDIR=$PROPIEDAD
+
+	recupera_propiedad "ARRDIR"	
+	export ARRIDIR=$PROPIEDAD
+
+	recupera_propiedad "PREPADIR"	
+	export PREPADIR=$PROPIEDAD
+
+	recupera_propiedad "RECHADIR"
+	export RECHADIR="$PROPIEDAD"
+
+	recupera_propiedad "BINDIR"
+	export BINDIR="$PROPIEDAD"
+
+	recupera_propiedad "DATAMAE"
+	export DATAMAE="$PROPIEDAD"
+
+	recupera_propiedad "LIBDIR"
+	export LIBDIR="$PROPIEDAD"
+
+	recupera_propiedad "LOGDIR"
+	export LOGDIR="$PROPIEDAD"
+
+	recupera_propiedad "LOGEXT"
+	export LOGEXT="$PROPIEDAD"
+
+
 
 	echo "$PATH" | grep .*"$BINDIR".*"$LIBDIR".* > /dev/null
 
@@ -151,7 +181,36 @@ function definir_variables
 		export PATH="$BINDIR":"$LIBDIR":.:$PATH
 	fi
 
+	export TSLEEP=30
+
+	chmod 777 "$GRUPO"/*	
+	chmod 777 "$BINDIR"/*
+	chmod 777 "$LIBDIR"/*
+
+	MAESTROS="encuestadores.mae preguntas.mae encuestas.mae"
+	COMANDOS="detectarC sumarC listarC"
+	LIBRERIAS="loguearC mirarC moverC"
+
+}
+
+
+function definir_variables_old
+{
 	
+	#GRUPO=$(pwd)
+	#GRUPO=${GRUPO%/*}
+	#export GRUPO
+	export ARRIDIR="$GRUPO/arribos"
+	export PREPADIR="$GRUPO/preparados"
+	export RECHADIR="$GRUPO/rechazados"
+	export BINDIR="$GRUPO/bin"
+	export DATAMAE="$GRUPO/mae"
+	export LIBDIR="$GRUPO/lib"
+	export LOGDIR="$GRUPO/log"
+	export LOGEXT="log"
+	export PATH="$BINDIR":"$LIBDIR":.:$PATH
+	export TSLEEP=30
+
 	chmod 777 "$GRUPO"/*	
 	chmod 777 "$BINDIR"/*
 	chmod 777 "$LIBDIR"/*
@@ -280,15 +339,16 @@ function llamada_detectar
 
 	verifica_instancia "detectarC"
  	if [ $INSTANCIA != S ];then
-		#detectarC  &
+		detectarC  &
 		debug "llamando a detectar..."
 	else
 		debug "detectar esta corriendo..."
 	fi
 
 	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=2)
-
+	PID=$(echo "$PID" | grep '^[0-9]*$')
 }
+
 
 
 ########################PRINCIPAL######################
@@ -301,6 +361,8 @@ YEL=33
 STA=00
 
 INFO=''
+
+resolver_path
 
 verificar_variables
 
@@ -323,6 +385,7 @@ if [ "$CONTINUA" = "S" ];then
 		verificar_variables "S"		
 		eco "Inicialización del Ambiente Concluida \n" "$BLU"
 		eco "Ambiente: \n$SETEADAS" "$YEL"
+		export ENTORNO_OK="1"
 		llamada_detectar
 		eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
 	fi
