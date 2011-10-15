@@ -15,11 +15,11 @@ ERR_CANT_PARAM=2
 
 #Variables principales
 
-PATH=${PATH}:$PWD 					#VIENE DE AFUERA
-DATAMAE=$PWD						#VIENE DE AFUERA
-LOGSIZE=409600						# tamanio maximo del log (viene de afuera)
-LOGEXT=log						# extension del archivo de log (vendria de afuera)
-LOGDIR=$PWD/logs					# directorio del log file (vendria de afuera)
+#PATH=${PATH}:$PWD 					#VIENE DE AFUERA
+#DATAMAE=$PWD						#VIENE DE AFUERA
+#LOGSIZE=409600						# tamanio maximo del log (viene de afuera)
+#LOGEXT=log						# extension del archivo de log (vendria de afuera)
+#LOGDIR=$PWD/logs					# directorio del log file (vendria de afuera)
 ARCH_ERRORES="$DATAMAE/errores.mae"
 
 mostrarAyuda() {
