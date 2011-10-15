@@ -3,7 +3,7 @@
 
 function debug
 {
-	if [ A != B ];then
+	if [ A != A ];then
 		echo "$1"
 	fi
 }

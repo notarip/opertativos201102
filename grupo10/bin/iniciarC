@@ -10,7 +10,7 @@ function eco
 
 function debug
 {
-	if [ A != B ];then
+	if [ A != A ];then
 		echo "$1"
 	fi
 }
@@ -46,7 +46,7 @@ function verifica_instancia
 
 	ps | grep .*$1.* > /dev/null
 
-	if [ $? -eq 0 ];then
+	if [ "$?" -eq 0 ];then
 		INSTANCIA="S"
 	fi
 }
@@ -63,11 +63,11 @@ function preguntar
 	do
 		read RTA
 
-		if [[ "$RTA" = "S"  || "$RTA" = "s" ]];then
+		if [ "$RTA" = "S"  -o "$RTA" = "s" ];then
 			CONTINUA="S"
 			OK="S"	
 		else
-			if [[ "$RTA" = "N" || "$RTA" = "n" ]];then
+			if [ "$RTA" = "N" -o "$RTA" = "n" ];then
 				CONTINUA="N"
 				OK="S"
 			fi
@@ -82,6 +82,12 @@ function verificar_variables
 	SETEADA=''
 	SETEADAS=''
 	NO_ASK=$1
+
+	
+	if [ -n "$CURRDIR" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$CURRDIR :'"$CURRDIR\n"
+	fi
 
 	if [ -n "$ARRIDIR" ];then
 		SETEADA="S"
@@ -113,13 +119,21 @@ function verificar_variables
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$LIBDIR :'"$LIBDIR\n"
 	fi
-	
-	if [ -n "$LOGDIR" };then
+
+
+	if [ -n "$LOGEXT" ];then
 		SETEADA="S"
-		SETEADAS="$SETEADAS"'$LOGDIR :'"$LOGDIR\n"
+		SETEADAS="$SETEADAS"'$LOGEXT :'"$LOGEXT\n"
 	fi
 
-	if [[ "$SETEADA" = "S" && "$NO_ASK" = "S" ]];then
+
+	if [ -n "$LOGSIZE" ];then
+		SETEADA="S"
+		SETEADAS="$SETEADAS"'$LOGSIZE :'"$LOGSIZE\n"
+	fi
+	
+
+	if [ "$SETEADA" = "S" -a "$NO_ASK" = "S" ];then
 		preguntar
 	else
 		CONTINUA="S"	
@@ -131,35 +145,36 @@ function verificar_variables
 function resolver_path
 {
 	GRUPO=$(pwd)
-	GRUPO="$GRUPO/$0"
-	GRUPO=$(echo $GRUPO | sed -n "s/\(.*\)\(\/bin\/.*\)/\1/p")
+	export GRUPO=$(echo "$GRUPO" | sed -n "s/\(.*\)\(\/bin.*\)/\1/p")
 }
 
 
 function recupera_propiedad
 {
+	
 
-	PROPIEDAD=$(cat "$GRUPO/conf/InstalarC.conf" | grep "^$1" | cut -d ' ' --fields=3,4,5,6)
+	PROPIEDAD=$(cat "$GRUPO/conf/InstalarC.conf" | grep "^$1" | cut -d ' ' --fields=3)
+	debug "++++++++++ $PROPIEDAD ++++++++++++++"	
 
 }
 
 function definir_variables
 {
 
-	recupeta_propiedad "CURRDIR"
-	export CURRDIR=$PROPIEDAD
+	recupera_propiedad "CURRDIR"
+	export CURRDIR="$PROPIEDAD"
 
-	recupera_propiedad "ARRDIR"	
-	export ARRIDIR=$PROPIEDAD
+	recupera_propiedad "ARRIDIR"	
+	export ARRIDIR="$GRUPO/$PROPIEDAD"
 
-	recupera_propiedad "PREPADIR"	
-	export PREPADIR=$PROPIEDAD
+	#recupera_propiedad "PREPADIR"	
+	export PREPADIR="$GRUPO/preparados"
 
-	recupera_propiedad "RECHADIR"
-	export RECHADIR="$PROPIEDAD"
+	#recupera_propiedad "RECHADIR"
+	export RECHADIR="$GRUPO/rechazados"
 
 	recupera_propiedad "BINDIR"
-	export BINDIR="$PROPIEDAD"
+	export BINDIR="$GRUPO/$PROPIEDAD"
 
 	recupera_propiedad "DATAMAE"
 	export DATAMAE="$PROPIEDAD"
@@ -168,11 +183,13 @@ function definir_variables
 	export LIBDIR="$PROPIEDAD"
 
 	recupera_propiedad "LOGDIR"
-	export LOGDIR="$PROPIEDAD"
+	export LOGDIR="$GRUPO$PROPIEDAD"
 
 	recupera_propiedad "LOGEXT"
 	export LOGEXT="$PROPIEDAD"
 
+	recupera_propiedad "MAXLOGSIZE"
+	export LOGSIZE=$(echo "$PROPIEDAD"*1024 | bc)
 
 
 	echo "$PATH" | grep .*"$BINDIR".*"$LIBDIR".* > /dev/null
@@ -183,9 +200,9 @@ function definir_variables
 
 	export TSLEEP=30
 
-	chmod 777 "$GRUPO"/*	
-	chmod 777 "$BINDIR"/*
-	chmod 777 "$LIBDIR"/*
+	#chmod 777 "$GRUPO"/*	
+	#chmod 777 "$BINDIR"/*
+	#chmod 777 "$LIBDIR"/*
 
 	MAESTROS="encuestadores.mae preguntas.mae encuestas.mae"
 	COMANDOS="detectarC sumarC listarC"
@@ -193,33 +210,6 @@ function definir_variables
 
 }
 
-
-function definir_variables_old
-{
-	
-	#GRUPO=$(pwd)
-	#GRUPO=${GRUPO%/*}
-	#export GRUPO
-	export ARRIDIR="$GRUPO/arribos"
-	export PREPADIR="$GRUPO/preparados"
-	export RECHADIR="$GRUPO/rechazados"
-	export BINDIR="$GRUPO/bin"
-	export DATAMAE="$GRUPO/mae"
-	export LIBDIR="$GRUPO/lib"
-	export LOGDIR="$GRUPO/log"
-	export LOGEXT="log"
-	export PATH="$BINDIR":"$LIBDIR":.:$PATH
-	export TSLEEP=30
-
-	chmod 777 "$GRUPO"/*	
-	chmod 777 "$BINDIR"/*
-	chmod 777 "$LIBDIR"/*
-
-	MAESTROS="encuestadores.mae preguntas.mae encuestas.mae"
-	COMANDOS="detectarC sumarC listarC"
-	LIBRERIAS="loguearC mirarC moverC"
-
-}
 
 
 function verificar_comandos
@@ -306,7 +296,8 @@ function verificar_librerias
 
 	ERR=''
 	ERR_MSG=''
-
+	
+	debug "verificando librerias en $LIBDIR"
 
 	if [ ! -f "$LIBDIR/loguearC" ];then
 		ERR=14
