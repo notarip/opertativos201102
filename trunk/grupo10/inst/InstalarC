@@ -90,7 +90,7 @@ function actualizar_archivo_configuracion
 		setear_conf_param "LISTARF" "$FECHACREACION"
 	else	
 		#echo -e "$GRUPO"
-		
+		echo "$RESPUESTA" | grep "^\/[a-zA-Z0-9_][a-zA-Z0-9_]*\(\/[a-zA-Z0-9_][a-zA-Z0-9_]*\)*$"
 		#echo -e "CURRDIR = /home/flavius/sistemasoperativos" > ../conf/InstalarC.conf
 		echo -e "CURRDIR = $GRUPO" >> $GRUPO/conf/InstalarC.conf
 		echo -e "CONFDIR = $GRUPO/conf" >> $GRUPO/conf/InstalarC.conf
@@ -186,7 +186,13 @@ function configurar_logsize
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
-		DEFLOGSIZE=$RESPUESTA
+		VALIDACION=$(echo "$RESPUESTA" | grep "^[0-9][0-9]*$");		
+		if [ "$VALIDACION" != "" ];then
+			DEFLOGSIZE=$RESPUESTA
+		else
+			mostrar_grabar "error en la data ingresada, se esperaba un numero entero" I;		
+			configurar_logsize		
+		fi		
 	fi
 }
 
@@ -199,7 +205,6 @@ function configurar_logext
 	unificar_respuestas
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
 		VALIDACION=$(echo "$RESPUESTA" | grep "^\.[a-zA-Z0-9][a-zA-Z0-9]*\(\.[a-zA-Z0-9][a-zA-Z0-9]*\)*$");		
-		echo -e "validacion es $VALIDACION"		
 		if [ "$VALIDACION" != "" ];then
 			DEFLOGEXT=$(echo "$RESPUESTA" | sed -n "s/\.\(.*\)/\1/p")	
 			#DEFLOGEXT=$RESPUESTA
@@ -219,7 +224,14 @@ function configurar_logdir
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
-		DEFLOGDIR=$RESPUESTA
+		VALIDACION=$(echo "$RESPUESTA" | grep "^\/[a-zA-Z0-9_][a-zA-Z0-9_]*\(\/[a-zA-Z0-9_][a-zA-Z0-9_]*\)*$");		
+		if [ "$VALIDACION" != "" ];then
+			DEFLOGDIR=$RESPUESTA
+		else
+			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con digito, numero o _" I;		
+			configurar_logdir		
+		fi		
+		
 	fi
 }
 
@@ -232,7 +244,14 @@ function configurar_bindir
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
-		DEFBINDIR=$RESPUESTA
+		VALIDACION=$(echo "$RESPUESTA" | grep "^\/[a-zA-Z0-9_][a-zA-Z0-9_]*\(\/[a-zA-Z0-9_][a-zA-Z0-9_]*\)*$");		
+		if [ "$VALIDACION" != "" ];then
+			DEFBINDIR=$RESPUESTA
+		else
+			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con digito, numero o _" I;		
+			configurar_bindir		
+		fi	
+		
 	fi
 }
 
@@ -276,7 +295,13 @@ function configurar_datasize
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
-		DEFDATASIZE=$RESPUESTA
+		VALIDACION=$(echo "$RESPUESTA" | grep "^[0-9][0-9]*$");		
+		if [ "$VALIDACION" != "" ];then
+			DEFDATASIZE=$RESPUESTA
+		else
+			mostrar_grabar "error en la data ingresada, se esperaba un numero entero" I;		
+			configurar_datasize		
+		fi
 	fi
 }
 
@@ -289,7 +314,14 @@ function configurar_arridir
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
-		DEFARRIDIR=$RESPUESTA
+		VALIDACION=$(echo "$RESPUESTA" | grep "^\/[a-zA-Z0-9_][a-zA-Z0-9_]*\(\/[a-zA-Z0-9_][a-zA-Z0-9_]*\)*$");		
+		if [ "$VALIDACION" != "" ];then
+			DEFARRIDIR=$RESPUESTA
+		else
+			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con digito, numero o _" I;		
+			configurar_arridir		
+		fi		
+
 	fi
 }
 
@@ -365,12 +397,22 @@ function instalacion_parcial
 	mostrar_grabar "$AUXCAT" I
 	mostrar_grabar "¿acepta completar la instalación?(Si/No)" I
 	read -e RESPUESTA
-	mostrar_grabar $RESPUESTA I G
-	if [ "$RESPUESTA" = "No" ];then
+	mostrar_grabar "$RESPUESTA" I G
+	RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
+	if [ "$RESPUESTA" = "SI" ];then
+		setParamFromConf
+		generar_directorios_archivos
+		actualizar_archivo_configuracion
+		verificar_instalacion
+		print_instalacion_parcial
+		mostrar_grabar "* FIN del proceso de Instalación Copyright SisOp (c)2011	*" I
+		mostrar_grabar "*****************************************************************" I
+	else
 		mostrar_grabar "¿desea iniciar una instalación completa nueva?(Si/No)" I
 		read -e RESPUESTA	
-		mostrar_grabar $RESPUESTA I G
-		if [ "$RESPUESTA" = "Si" ];then
+		mostrar_grabar "$RESPUESTA" I G
+		RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
+		if [ "$RESPUESTA" = "SI" ];then
 			INSTALADOS[1]="NO"
 			INSTALADOS[2]="NO"
 			INSTALADOS[3]="NO"
@@ -378,14 +420,6 @@ function instalacion_parcial
 			setParamDefault
 			instalacion_completa
 		fi	
-	else
-		setParamFromConf
-		generar_directorios_archivos
-		actualizar_archivo_configuracion
-		verificar_instalacion
-		print_instalacion_parcial
-		mostrar_grabar "* FIN del proceso de Instalación Copyright SisOp (c)2011	*" I
-		mostrar_grabar "*****************************************************************" I	
 	fi
 }
 
@@ -401,7 +435,8 @@ function instalacion_completa
 	mostrar_grabar 'Aceptar/Rechazar(a/r)' I
 	RESPUESTA="";	
 	read -e RESPUESTA
-	mostrar_grabar $RESPUESTA I G
+	mostrar_grabar "$RESPUESTA" I G
+	unificar_respuestas
 	if [ "$RESPUESTA" = "a" ];then
 		
 		#mkdir ../temp
@@ -452,14 +487,15 @@ function instalacion_completa
 					mostrar_grabar "se presiono enter" I G
 					break
 				else
-					mostrar_grabar $RESPUESTA I G					
+					mostrar_grabar "$RESPUESTA" I G					
 					clear
 				fi
 			done
 			mostrar_grabar "Iniciando Instalación... Está UD. seguro? (Si/No)" I			
 			read -e RESPUESTA	
-			mostrar_grabar $RESPUESTA I G		
-			if [ "$RESPUESTA" != "Si" ];then
+			mostrar_grabar "$RESPUESTA" I G
+			RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
+			if [ "$RESPUESTA" != "SI" ];then
 				fin
 			fi
 			generar_directorios_archivos
@@ -574,12 +610,14 @@ GRUPO=$(pwd)
 GRUPO="$GRUPO/$0"
 GRUPO=$(echo $GRUPO | sed -n "s/\(.*\)\(\/inst\/.*\)/\1/p")
 LIBDIR="$GRUPO/lib"
+PATH=${PATH}:$LIBDIR
 mkdir -p $GRUPO/temp
 #GRUPO=${GRUPO%/*}
 export GRUPO
 export LOGSIZE=400000
 export LOGEXT=log
 export LOGDIR="$GRUPO/inst"
+export PATH
 DATE=$(date "+%d/%m/%Y %k:%M:%S")
 mostrar_grabar "$DATE-$USERNAME-instalarC-I-Inicio de ejecucion" I G
 verificar_instalacion
