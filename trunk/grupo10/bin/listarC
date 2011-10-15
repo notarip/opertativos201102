@@ -7,8 +7,8 @@ $Term::ANSIColor::AUTORESET = 1;
 
 ##DECLARACION DE VARIABLES
 
-#$GRUPO=$ENV{'GRUPO'};				#viene de afuera
-my $GRUPO=$ENV{'PWD'};				#pero mientras...				
+$GRUPO=$ENV{'GRUPO'};				#viene de afuera
+#my $GRUPO=$ENV{'PWD'};				#pero mientras...				
 
 my $archivo_Sumario_Encuestas = "$GRUPO/ya/encuestas.sum";
 my $archivo_Maestro_Encuestas = "$GRUPO/mae/encuestas.mae";
