@@ -1,11 +1,15 @@
 1;E;Error: Fue recibido un parametro no numerico donde se esperaba un numerico.
-2;E;Error: Cantidad erronea de parametros, se esparaban para la opcion seleccionada @ parametros.
-3;E;Error: No se reconoce el tipo de mensaje pasado por parametro. Los tipos de mensaje son [A,I,E,SE].
+2;E;Error: Cantidad erronea de parametros, se esparaban para la opcion seleccionada @ parametros
+3;E;Error: No se reconoce el tipo de mensaje pasado por parametro. Los tipos de mensaje son [A,I,E,SE]
 4;E;Error: No se encuentra el archivo @.
 5;E;Error: No se encuentra el directorio @.
-6;A;Advertencia: El archivo @ ya se encuentra duplicado. 
-7;A;Advertencia: Fechas de vigencia invalidas (archivo: @). 
+6;A;Advertencia: El archivo @ ya se encuentra duplicado.
+7;A;Advertencia: Fechas de vigencia invalidas (archivo: @).
 8;A;Advertencia: Encuestador invalido (archivo: @).
-9;A;Advertencia: Nombre del archivo invalido (archivo: @). 
-10;I;Informacion: Se recibio satisfactoriamente el archivo @.
+9;A;Advertencia: Nombre del archivo invalido (archivo: @).
+10;I;Se recibió satisfactoriamente el archivo @.
 11;SE;Error severo: Entorno no inicializado.
+12;SE;Error severo: Falta el maestro: @
+13;SE;Error severo: Falta el comando: @
+14;SE;Error severo: Falta el libreria: @
+15;A;Error: El proceso detectarC ya se encuentra corriendo.

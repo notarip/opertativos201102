@@ -1,0 +1,52 @@
+110, Posee Numero de CUIT,+,ALTA
+111, Quiere contratar servicios premium,+,ALTA
+120, Tiene domicilio en capital,+,MEDIA
+121, Quiere contratar servicios estandard,+,MEDIA
+130, Es un referido,+,BAJA
+131, Usa habitualmente el debito automatico,+,BAJA
+210, Tiene deuda atrasada en mas de 3 meses,-,ALTA
+211, Tiene acción judicial pendiente,-,ALTA
+220, Cambia regularmente de proveedor,-,MEDIA
+221, No posee referencias,-,MEDIA
+230, Está buscando dar de baja servicios,-,BAJA
+231, Esta en el límite del area de cobertura,-,BAJA
+141, Le parece que va a ganar cristina,+,ALTA
+142, Es empleado estatal,-,MEDIA
+143, Reside en capital federal,-,BAJA
+144, Fue a escuela secundaria,+,MEDIA
+145, Fue a escuela primaria,+,BAJA
+146, Tiene estudios terciarios,+,ALTA
+147, Esta afiliado a algun partido politico,-,MEDIA
+148, Tiene trabajo,-,BAJA
+149, Tiene problemas de llegar a fin de mes,+,ALTA
+150, Fue acaso tentado de votar a algun candidato por dinero,-,ALTA
+151, Le dio lastima el spot de altamira,+,MEDIA
+301, Le gusto que river se valla al descenso,-,ALTA
+302, Juega al prode,-,MEDIA
+303, Cree que el campeonato lo gana boca,-,ALTA
+304, Ve futbol internacional,+,BAJA
+305, Maradona fue mas grande que pele,+,MEDIA
+306, Alguna vez jugo al futbol,-,ALTA
+307, Va a la cancha,+,BAJA
+308, La seleccion es un desastre,-,BAJA
+309, La pelota es redonda,-,ALTA
+310, La pelota se mancha,+,BAJA
+321, Lloro cuando murio Steve Jobs,+,ALTA
+322, Usas al menos 2 sistemas operativos,+,ALTA
+323, Entendes el chiste cd 2 run,-,BAJA
+324, Entiende Algebra,-,MEDIA 
+325, Sabe lo que es el Algebra de Boole,+,BAJA
+410, Tiene una mascota,+,ALTA
+411, Tiene tortuga,-,ALTA
+412, Tiene sapo,+,MEDIA
+413, Tiene hamster,-,BAJA
+414, Se compro un pez por haber visto NEMO,-,MEDIA
+415, Le tiene carino a las ballenas por Whily,+,BAJA
+416, Le gustan los gatos,-,ALTA
+423, Cambio su celular este ano,-,MEDIA
+424, Tiene smart phone,+,BAJA
+513, Hizo el cbc en 1 anio,-,ALTA
+514, Piensa egresarse en el plazo establecido por el plan,-,MEDIA
+515, Le resulto cuasi imposible aprobar Analisis,+,ALTA
+516, Hizo alguna materia por UBA XXI,+,BAJA
+517, Ya odia a algun profesor,+,MEDIA
