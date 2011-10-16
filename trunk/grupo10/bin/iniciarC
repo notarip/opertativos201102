@@ -81,8 +81,10 @@ function verificar_variables
 	CONTINUA=''
 	SETEADA=''
 	SETEADAS=''
-	NO_ASK=$1
+	NO_ASK="$1"
 
+	debug "verificando variables ..."
+	debug "$CURRDIR"
 	
 	if [ -n "$CURRDIR" ];then
 		SETEADA="S"
@@ -133,7 +135,7 @@ function verificar_variables
 	fi
 	
 
-	if [ "$SETEADA" = "S" -a "$NO_ASK" = "S" ];then
+	if [ "$SETEADA" = "S" -a "$NO_ASK" != "S" ];then
 		preguntar
 	else
 		CONTINUA="S"	
@@ -200,9 +202,9 @@ function definir_variables
 
 	export TSLEEP=30
 
-	#chmod 777 "$GRUPO"/*	
-	#chmod 777 "$BINDIR"/*
-	#chmod 777 "$LIBDIR"/*
+	chmod 777 "$GRUPO"/*	
+	chmod 777 "$BINDIR"/*
+	chmod 777 "$LIBDIR"/*
 
 	MAESTROS="encuestadores.mae preguntas.mae encuestas.mae"
 	COMANDOS="detectarC sumarC listarC"
@@ -337,7 +339,7 @@ function llamada_detectar
 	fi
 
 	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=2)
-	PID=$(echo "$PID" | grep '^[0-9]*$')
+	PID=$(echo "$PID" | cut -d ' ' --field=1)
 }
 
 
@@ -347,7 +349,7 @@ function llamada_detectar
 
 RED=31
 GRE=32
-BLU=34
+BLU=36
 YEL=33
 STA=00
 
