@@ -4,7 +4,7 @@
 
 COLOR_A=33	#Amarillo
 COLOR_SE=00	#Normal
-COLOR_I=34 	#Azul
+COLOR_I=32 	#Verde
 COLOR_E=31	#Rojo
 
 # Codigos de errores
@@ -25,15 +25,15 @@ ERR_CANT_PARAM=2
 mostrarLog() {
 
 echo
-MENSAJE=$(echo "FECHA-USUARIO-TIPO DE MENSAJE-MENSAJE")
+MENSAJE=$(echo "FECHA#USUARIO#TIPO DE MENSAJE#MENSAJE")
 echo -e "\E["00"m"$MENSAJE"">>"temp"
 echo "$1" | while read line
 do
 	FECHA=$(echo $line | sed -n "s/^\([^-]*\).*/\1/p")
 	FECHA=$(date -d "$FECHA" "+%d/%m/%Y %H:%M:%S")
 	USUARIO=$(echo $line | sed -n "s/^[^-]*-\([^-]*\).*/\1/p")
-	TIPO_MSJ=$(echo $line | sed -n "s/.*-\([^-]*\)-[^-]*$/\1/p")
-	MSJ=$(echo $line | sed -n "s/.*-\([^-]*\)$/\1/p")
+	TIPO_MSJ=$(echo $line | sed -n "s/^[^-]*-[^-]*-[^-]*-\([^-]*\).*/\1/p")
+	MSJ=$(echo $line | sed -n "s/^[^-]*-[^-]*-[^-]*-[^-]*-\([^-]*\).*/\1/p")
 
 	case $TIPO_MSJ in
 
@@ -44,10 +44,10 @@ do
 
 	esac
 
-	MENSAJE="$FECHA-$USUARIO-$TIPO_MSJ-$MSJ"
+	MENSAJE="$FECHA#$USUARIO#$TIPO_MSJ#$MSJ"
 	echo -e "\E["$COLOR"m"$MENSAJE"\033[0m">>"temp"
 done
-column -s - -t temp | more
+column -s \# -t temp | less -mR
 echo
 rm temp
 return 0
@@ -74,7 +74,7 @@ return 0
 
 mostrarVersion() {
 echo
-echo "mirarC 1.0"
+echo "mirarC 2.0"
 echo "Escrito por Rodolfo Cruz y Martin Ciruzzi"
 echo
 return 0
