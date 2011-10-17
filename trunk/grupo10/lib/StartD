@@ -1,0 +1,106 @@
+#!/bin/bash
+#$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
+
+function eco
+{
+    echo -e "\E["$2"m"$1"\033[0m"
+}
+
+function verifica_instancia
+{
+#verifica si existe otra instancia del proceso tanto de detectar como de sumar
+#viene en $1
+#devuelve $INSTANCIA = S si existe una instancia en ejecucion
+
+
+    INSTANCIA="N"
+    #ps | grep .*$1.* > /dev/null
+    PID=$(echo $(ps | awk /$1/' && !/awk/ && !/StopD/ { print $1}'))
+    #PID=$(echo $(ps | awk /$PROCESO/' { print $1}'))  
+    #echo $(ps | awk /$PROCESO/' && !/awk/ {print $1}')
+    if [ "$PID" != "" ];then
+        INSTANCIA="S"
+    fi
+}
+
+
+function llamada_detectar
+{
+
+    
+    verifica_instancia "$1"
+     if [ $INSTANCIA != S ];then
+        $1  &
+        echo "llamando a $PROCESO..."
+    else
+        echo "$PROCESO esta corriendo..."
+    fi
+#    PID=$(echo $(ps | awk '/detectarC/ && !/awk/ { print $1}'))
+    PID=$(echo $(ps | awk /$1/' && !/awk/ { print $1}'))
+
+#    echo "El valor de PID es: $PID"
+#    PID=$(echo ${file_base%}|awk -F . '{print $NF}')
+#    PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=2)
+}
+
+
+
+mostrarAyuda() {
+    echo
+    echo "MODO DE USO: StopD [Demonio a iniciar]"
+    echo
+    echo "OPCIONES:"
+    echo "-h, --help    Muestra esta pantalla"
+    echo
+    echo "EJEMPLO:"
+    echo
+    echo "StopD <Demonio a iniciar>"
+    echo
+    echo "StopD detectarC"
+    echo '    Se da inicio al proceso demonio recibido por parametro'
+    echo
+    echo
+
+return 0
+}
+
+########################PRINCIPAL######################
+
+
+RED=31
+GRE=32
+BLU=34
+YEL=33
+STA=00
+PROCESO=$1
+
+INFO=''
+#declare -x RUNDIRECTORY="${0%%/*}"
+
+#if [ ENTORNO_OK != 1 ];then
+#    echo "Error: Entorno no inicializado"
+#    exit 1
+#fi
+
+
+
+if [ $# != 1 ];then
+    echo "Cantidad de parametros incorrectos"
+    exit $ERR_CANT_PARAM
+fi
+
+if [ $1 = '--help' -o $1 = "-h" ]
+then
+    mostrarAyuda    
+    exit 0
+fi
+
+if [ ! -f "$1" ];then
+    echo "Archivo de proceso Inexistente"
+    #loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
+    exit $ERR_ARCH_NO_EXISTE
+fi
+
+
+llamada_detectar "$1"
+eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
