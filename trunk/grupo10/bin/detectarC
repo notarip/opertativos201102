@@ -1,6 +1,59 @@
 #!/bin/bash
 
 
+function mostrarAyuda {
+	echo
+	eco "MODO DE USO: . detectarC [OPCIONES]" "$GRE"
+	eco
+	eco "OPCIONES:" "$GRE"
+	eco "-h, --help	Muestra esta pantalla" "$GRE"
+	eco "-v, --version	Informa acerca de la version" "$GRE"
+	eco
+	return 0
+}
+
+
+function verificar_parametros
+{
+	# Verificacion de cantidad de parametros y codigos numericos
+	
+	if [ "$1" -ne 0 ]
+	then
+
+		if [ "$1" -gt 1 ]
+		then
+			echo "Cantidad erronea de parametros, pruebe con -h."
+			log 2 "a lo sumo 1"
+			exit $ERR_CANT_PARAM
+		fi
+
+		if [ "$2" = '--help' -o "$2" = "-h" ]
+		then
+			mostrarAyuda	
+			exit 0
+		else
+			if [ "$2" = "--version" -o "$2" = "-v" ]
+			then
+				echo
+				eco "detectarC v 1.0" "$GRE"
+				eco "Escrito por pnotari@fi.uba.ar" "$GRE"
+				echo
+				exit 0
+			else
+				echo "Parametro invalido, pruebe con --help  -h"
+				exit $ERR_CANT_PARAM	
+			fi
+		fi
+	fi
+}
+
+
+function eco
+{
+	echo -e "\E["$2"m"$1"\033[0m"
+}
+
+
 function debug
 {
 	if [ A != A ];then
@@ -15,57 +68,110 @@ function log
 
 	if [ -n "$2" ];then
 		"$LIBDIR"/loguearC -s "detectarC" "$1" "$2"
-		echo loguear -s "$1" "$2"
+		debug loguear -s "$1" "$2"
 	else
 		"$LIBDIR"/loguearC -s "detectarC" "$1"
-		echo loguear -s "$1"
+		debug loguear -s "$1"
 	fi
 
 }
 
 
-function verifica_entorno
+function verificar_entorno
 {
-#verificacion de variables de ambiente	
-#devuelve $ENTORNO = S si esta ok
-#$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
+
+	SETEADA=''
+	NO_SETEADA=''
+	CONTINUA=''
+
+	debug "verificando variables ..."
+	debug "$CURRDIR"
 	
-	ENTORNO="S"	
+	if [ -n "$CURRDIR" ];then
+
+
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
+
+	if [ -n "$ARRIDIR" ];then
+
+
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
+
+
+	if [ -n "$PREPADIR" ];then
+
+
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
+
+	if [ -n "$RECHADIR" ];then
+
+
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
+
+
+
+
+
+
+
+
+
+
+
+	if [ -n "$BINDIR" ];then
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
+
+
+	if [ -n "$DATAMAE" ];then
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
+
+	if [ -n "$LIBDIR" ];then
+		SETEADA="S"
+	fi
+
+
+	if [ -n "$LOGEXT" ];then
+		SETEADA="S"
+
+	else
+		NO_SETEADA="S"
+	fi
+
+
+	if [ -n "$LOGSIZE" ];then
+		SETEADA="S"
+	else
+		NO_SETEADA="S"
+	fi
 	
-	if [ -z "$ARRIDIR" ];then
-		debug 'no se seteo la variable $ARRIDIR'
-		ENTORNO="N"
-	fi
-
-	if [ -z "$PREPADIR" ];then
-		debug 'no se seteo la variable $PREPADIR'
-		ENTORNO="N"
-	fi
-
-	if [ -z "$RECHADIR" ];then
-		debug 'no se seteo la variable $RECHADIR'
-		ENTORNO="N"
-	fi
-
-	if [ -z "$BINDIR" ];then
-		debug 'no se seteo la variable $BINDIR'
-		ENTORNO="N"
-	fi
 	
-	if [ -z "$LIBDIR" ];then
-		debug 'no se seteo la variable $LIBDIR'
-		ENTORNO="N"
-	fi	
-
-	debug "arribo: $ARRIDIR"
-	debug "prepa: $PREPADIR"
-	debug "recha: $RECHADIR"
-	debug "bin: $BINDIR"
-	debug "lib: $LIBDIR"
-
-	debug "verificando entorno... resultado-> $ENTORNO"
+	if [ "$NO_SETEADA" = "S" ];then
+		CONTINUA="N"
+	else
+		CONTINUA="S"	
+	fi
 
 }
+
+
 
 function verifica_instancia
 {
@@ -215,7 +321,7 @@ function llama_mover
 
 	log "$3" "$ARCH"
 
-	"$LIBDIR/moverC" "$1" "$DESTINO"
+	moverC "$1" "$DESTINO" "detectarC"
 		
 }
 
@@ -293,9 +399,18 @@ trap terminar SIGTERM
 
 #####programa principal######
 
-verifica_entorno 
+RED=31
+GRE=32
+BLU=36
+YEL=33
+STA=00
 
-if [ $ENTORNO != S ];then
+
+verificar_parametros "$#" "$1"
+
+verificar_entorno
+
+if [ "$CONTINUA" != S ];then
 	ERR="11" #Entorno no inicializado
 	log $ERR ""
 	exit $ERR_ENTORNO
@@ -335,7 +450,7 @@ while [ $CORTE = N ];do
 
 	debug "durmiendo $TSLEEP seg."
 	
-	sleep $TSLEEP
+	sleep "$TSLEEP"
 done
 
 

@@ -2,6 +2,55 @@
 #$ARRIDIR, $PEPRADIR, $RECHADIR, $BINDIR
 
 
+function mostrarAyuda {
+	echo
+	eco "MODO DE USO: . iniciarC [OPCIONES]" "$GRE"
+	eco
+	eco "Para que el seteo de las variables sea efectivo " "$GRE"
+	eco "debe ejecutarse en el mismo ambiente en el que se esta." "$GRE"
+	eco
+	eco "OPCIONES:" "$GRE"
+	eco "-h, --help	Muestra esta pantalla" "$GRE"
+	eco "-v, --version	Informa acerca de la version" "$GRE"
+	eco
+	return 0
+}
+
+
+function verificar_parametros
+{
+	# Verificacion de cantidad de parametros y codigos numericos
+	
+	if [ "$1" -ne 0 ]
+	then
+
+		if [ "$1" -gt 1 ]
+		then
+			echo "Cantidad erronea de parametros, pruebe con -h."
+			log 2 "a lo sumo 1"
+			exit $ERR_CANT_PARAM
+		fi
+
+		if [ "$2" = '--help' -o "$2" = "-h" ]
+		then
+			mostrarAyuda	
+			exit 0
+		else
+			if [ "$2" = "--version" -o "$2" = "-v" ]
+			then
+				echo
+				eco "iniciarC v 1.0" "$GRE"
+				eco "Escrito por pnotari@fi.uba.ar" "$GRE"
+				echo
+				exit 0
+			else
+				echo "Parametro invalido, pruebe con --help  -h"
+				exit $ERR_CANT_PARAM	
+			fi
+		fi
+	fi
+}
+
 function eco
 {
 	echo -e "\E["$2"m"$1"\033[0m"
@@ -22,15 +71,15 @@ function log
 	#en $2 recibe el parametro opcional
 	
 	#se evalua que exista la lib de logueo
-	echo $2 | grep .*loguearC.* > /dev/null
+	#echo $2 | grep .*loguearC.* > /dev/null
 
 	if [ "$SIN_LOG" != "S" ];then 
 		if [ -n "$2" ];then
-			"$LIBDIR"/loguearC -s "iniciarC" "$1" "$2"
-			echo loguear -s "$1" "$2"
+			loguearC -s "iniciarC" "$1" "$2"
+			debug loguear -s "$1" "$2"
 		else
-			"$LIBDIR"/loguearC -s "$1"
-			echo loguear -s "iniciarC" "$1"
+			loguearC -s "$1"
+			debug loguear -s "iniciarC" "$1"
 		fi
 	fi
 }
@@ -81,6 +130,7 @@ function verificar_variables
 	CONTINUA=''
 	SETEADA=''
 	SETEADAS=''
+	NO_SETEADA=''
 	NO_ASK="$1"
 
 	debug "verificando variables ..."
@@ -89,32 +139,44 @@ function verificar_variables
 	if [ -n "$CURRDIR" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$CURRDIR :'"$CURRDIR\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 	if [ -n "$ARRIDIR" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$ARRIDIR :'"$ARRIDIR\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 
 	if [ -n "$PREPADIR" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$PREPADIR :'"$PREPADIR\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 	if [ -n "$RECHADIR" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$RECHADIR :'"$RECHADIR\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 	if [ -n "$BINDIR" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$BINDIR :'"$BINDIR\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 	if [ -n "$DATAMAE" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$DATAMAE :'"$DATAMAE\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 	if [ -n "$LIBDIR" ];then
@@ -126,16 +188,21 @@ function verificar_variables
 	if [ -n "$LOGEXT" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$LOGEXT :'"$LOGEXT\n"
+	else
+		NO_SETEADA="S"
 	fi
 
 
 	if [ -n "$LOGSIZE" ];then
 		SETEADA="S"
 		SETEADAS="$SETEADAS"'$LOGSIZE :'"$LOGSIZE\n"
+	else
+		NO_SETEADA="S"
 	fi
 	
+	
 
-	if [ "$SETEADA" = "S" -a "$NO_ASK" != "S" ];then
+	if [ "$SETEADA" = "S" -a "$NO_SETEADA" != "S" -a "$NO_ASK" != "S" ];then
 		preguntar
 	else
 		CONTINUA="S"	
@@ -354,6 +421,8 @@ YEL=33
 STA=00
 
 INFO=''
+
+verificar_parametros "$#" "$1"
 
 resolver_path
 
