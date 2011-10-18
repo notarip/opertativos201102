@@ -46,24 +46,24 @@ then
 	exit 0
 fi
 
-declare -x RUNDIRECTORY="${0%%/*}"
+#declare -x RUNDIRECTORY="${0%%/*}"
 #echo "el rundirectory es $RUNDIRECTORY"
 
 
 if [ $# -ne 3 -a $# -ne 2 ]
 then
 	echo "Cantidad erronea de parametros"
-	$RUNDIRECTORY/loguearC -s $ERR_CANT_PARAM "2 o 3"
+	loguearC -s $ERR_CANT_PARAM "2 o 3"
 	exit $ERR_CANT_PARAM
 fi
 if [ ! -f "$ORIGEN" ];then
 	echo "Archivo origen inexistente"
-	$RUNDIRECTORY/loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
+	loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
 	exit $ERR_ARCH_NO_EXISTE
 fi
 if [ ! -d "$DESTINO" ];then
 	echo "Directorio destino inexistente"
-	$RUNDIRECTORY/loguearC -s $ERR_DIR_NO_EXISTE $DESTINO
+	loguearC -s $ERR_DIR_NO_EXISTE $DESTINO
 	exit $ERR_DIR_NO_EXISTE
 fi
 
@@ -109,9 +109,9 @@ else
 fi
 if [ $# -eq 3 ]
 then
-	$RUNDIRECTORY/loguearC "moverC" I "Se movio el archivo exitosamente mediante el comando $3"
+	loguearC "moverC" I "Se movio el archivo exitosamente mediante el comando $3"
 else
-	$RUNDIRECTORY/loguearC "moverC" I "Se movio el archivo exitosamente desde la consola"
+	loguearC "moverC" I "Se movio el archivo exitosamente desde la consola"
 fi
 echo "Archivo movido exitosamente"
 exit 0
