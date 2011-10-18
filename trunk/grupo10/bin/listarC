@@ -7,8 +7,8 @@ $Term::ANSIColor::AUTORESET = 1;
 
 ##DECLARACION DE VARIABLES
 
-$GRUPO=$ENV{'GRUPO'};				#viene de afuera
-#my $GRUPO=$ENV{'PWD'};				#pero mientras...				
+$GRUPO=$ENV{'GRUPO'};                #viene de afuera
+#my $GRUPO=$ENV{'PWD'};                #pero mientras...                
 
 my $archivo_Sumario_Encuestas = "$GRUPO/ya/encuestas.sum";
 my $archivo_Maestro_Encuestas = "$GRUPO/mae/encuestas.mae";
@@ -16,31 +16,35 @@ my $archivo_Maestro_Encuestadores= "$GRUPO/mae/encuestadores.mae";
 
 sub mostrarAyuda {
 
-	print "\nModo de Uso: listarC [opciones] [agrupamiento] [Filtro Nombre Encuestador] [Filtro Codigo Encuesta] [Filtro Numero de Encuesta] [Filtro Sitio Encuesta]\n";
-	print "\n";
-	print "OPCIONES\n";
-	print "-c: Muestra Informe por Pantalla\n";
-	print "-e: Graba Informe en un archivo cuyo nombre es la fecha y hora actual ubicado en ./ya\n";
-	print "-v, --version: Informa sobre la version\n";
-	print "-h, --help: Muestra esta pantalla\n";
-	print "\n";
-	print "FILTROS\n";
-	print "Los distintos filtros que se quieren aplicar para un mismo campo deben ir separados con ';'\n";
-	print "Filtros especiales que se permiten son:\n";
-	print "'*': Se puede utilizar en cualquier campo. Muestra todos los elementos del campo en particular\n";
-	print "'[Inicio..Fin]': Solo para Codigo y Numero de Encuesta. Muestra todos los elementos que van de Inicio hasta Fin\n";	
-	print "\n";
-	print "AGRUPAMIENTO\n";
-	print "ver luego\n";	
-	print "\n";	
-	exit 0;
+    print "\nResuelve consultas y emite informes sobre las encuestas\n\n";    
+    print "Modo de Uso: listarC [opciones] [agrupamiento] [Filtro Nombre Encuestador] [Filtro Codigo Encuesta] [Filtro Numero de Encuesta] [Filtro Sitio Encuesta]\n";
+    print "\n";
+    print "OPCIONES\n";
+    print "-c: Muestra Informe por Pantalla\n";
+    print "-e: Graba Informe en un archivo cuyo nombre es la fecha y hora actual ubicado en ./ya\n";
+    print "-v, --version: Informa sobre la version\n";
+    print "-h, --help: Muestra esta pantalla\n";
+    print "\n";
+    print "FILTROS\n";
+    print "Los distintos filtros que se quieren aplicar para un mismo campo deben ir separados con ';'\n";
+    print "Filtros especiales que se permiten son:\n";
+    print "'*': Se puede utilizar en cualquier campo. Muestra todos los elementos del campo en particular\n";
+    print "'[Inicio..Fin]': Solo para Codigo y Numero de Encuesta. Muestra todos los elementos que van de Inicio hasta Fin\n";    
+    print "\n";
+    print "AGRUPAMIENTO\n";
+    print "-n    Agrupa los registros por nombre del encuestador\n";
+    print "-e    Agrupa los registros por numero de encuesta\n";
+    print "-c    Agrupa los registros por codigo de encuesta\n";
+    print "-s    Agrupa los registros por sitio de la encuesta\n";
+    print "\n";    
+    exit 0;
 }
 
 sub mostrarVersion {
 
-	print "\nlistarC v1.0\n";
-	print "Escrito por Martin Ciruzzi y Rodolfo Cruz\n\n";
-	exit 0;
+    print "\nlistarC v1.0\n";
+    print "Escrito por Martin Ciruzzi y Rodolfo Cruz\n\n";
+    exit 0;
 }
 
 
@@ -48,21 +52,21 @@ sub mostrarVersion {
 my $imprime = 0 ;
 my $informe = 0 ;
 use Switch;
-	switch ($ARGV[0]) {
+    switch ($ARGV[0]) {
 
-		case "-c"		{ $imprime=1; }
-		case "-e"		{ $informe=1; }
-		case ["-ec","-ce"]	{ $informe=1;$imprime=1;  }
-		case ["-h","--help"]	{ mostrarAyuda; }
-		case ["-v","--version"] { mostrarVersion;}
-		else			{ print "ERROR: Opcion Invalida\n"; exit 1;}
-	}  
+        case "-c"        { $imprime=1; }
+        case "-e"        { $informe=1; }
+        case ["-ec","-ce"]    { $informe=1;$imprime=1;  }
+        case ["-h","--help"]    { mostrarAyuda; }
+        case ["-v","--version"] { mostrarVersion;}
+        else            { print "ERROR: Opcion Invalida\n"; exit 1;}
+    }  
 
 ##CHEKEO PARAMETROS
 
 if (@ARGV != 6) {
-	print "ERROR: Cantidad de Parametros Ingresados incorrecta\n";
-	exit 1;
+    print "ERROR: Cantidad de Parametros Ingresados incorrecta\n";
+    exit 1;
 }
 
 ##CHEQUEO ORDENAMIENTO
@@ -89,62 +93,62 @@ my $elemento;
 my $linea;
 
 foreach $elemento (@encuestadores){
-	if ("$elemento" eq '*') {
-		@encuestadores=();
-		open ( ENCUESTADORES, "<$archivo_Maestro_Encuestadores") || die "ERROR: Archivo $archivo_Maestro_Encuestadores no encontrado\n";
-		while ($linea = <ENCUESTADORES>){
-			my $unEncuestador;
-			($unEncuestador) = ($linea =~ /^[^,]*,[^,]*,([^,]*),.*/);
-			push (@encuestadores, $unEncuestador);
-		}
-		close ( ENCUESTADORES);	
-		break;
-	}
+    if ("$elemento" eq '*') {
+        @encuestadores=();
+        open ( ENCUESTADORES, "<$archivo_Maestro_Encuestadores") || die "ERROR: Archivo $archivo_Maestro_Encuestadores no encontrado\n";
+        while ($linea = <ENCUESTADORES>){
+            my $unEncuestador;
+            ($unEncuestador) = ($linea =~ /^[^,]*,[^,]*,([^,]*),.*/);
+            push (@encuestadores, $unEncuestador);
+        }
+        close ( ENCUESTADORES);    
+        break;
+    }
 }
 
 foreach $elemento (@codigos_Encuesta){
-	if ($elemento eq '*') {
-		@codigos_Encuesta=();
-		open ( ENCUESTAS, "<$archivo_Maestro_Encuestas") || die "ERROR: Archivo $archivo_Maestro_Encuestas no encontrado\n";
-		while ($linea = <ENCUESTAS>){
-			my $unCodigoEncuesta;
-			($unCodigoEncuesta) = ($linea =~ /^([^,]*),.*/);
-			push (@codigos_Encuesta, $unCodigoEncuesta);
-		}
-		close ( ENCUESTADORES);	
-		break;
-	}
-	if ($elemento =~ /\[E\d*\.\.E\d*\]/){
-		(my $inicio, my $final)= ($elemento =~ /\[E(\d*)\.\.E(\d*)\]/);
-		my @elemAAgregar= (E.$inicio..E.$final);
-		push (@codigos_Encuesta, @elemAAgregar);
-	}
+    if ($elemento eq '*') {
+        @codigos_Encuesta=();
+        open ( ENCUESTAS, "<$archivo_Maestro_Encuestas") || die "ERROR: Archivo $archivo_Maestro_Encuestas no encontrado\n";
+        while ($linea = <ENCUESTAS>){
+            my $unCodigoEncuesta;
+            ($unCodigoEncuesta) = ($linea =~ /^([^,]*),.*/);
+            push (@codigos_Encuesta, $unCodigoEncuesta);
+        }
+        close ( ENCUESTADORES);    
+        break;
+    }
+    if ($elemento =~ /\[E\d*\.\.E\d*\]/){
+        (my $inicio, my $final)= ($elemento =~ /\[E(\d*)\.\.E(\d*)\]/);
+        my @elemAAgregar= (E.$inicio..E.$final);
+        push (@codigos_Encuesta, @elemAAgregar);
+    }
 }
 
 foreach $elemento (@numeros_Encuesta){
-	if ($elemento eq '*') {
-		@numeros_Encuesta=();
-		open ( SUMARIO, "<$archivo_Sumario_Encuestas") || die "ERROR: Archivo $archivo_Sumario_Encuestas no encontrado\n";
-		while ($linea = <SUMARIO>){
-			my $unNumeroEncuesta;
-			($unNumeroEncuesta) = ($linea =~ /^[^,]*,[^,]*,([^,]*),.*/);
-			push (@numeros_Encuesta, $unNumeroEncuesta);
-		}
-		close (SUMARIO);	
-		break;
-	}
-	if ($elemento =~ /\[\d*\.\.\d*\]/){
-		(my $inicio, my $final)= ($elemento =~ /\[(\d*)\.\.(\d*)\]/);
-		my @elemAAgregar= ($inicio..$final);
-		push (@numeros_Encuesta, @elemAAgregar);
-	}
+    if ($elemento eq '*') {
+        @numeros_Encuesta=();
+        open ( SUMARIO, "<$archivo_Sumario_Encuestas") || die "ERROR: Archivo $archivo_Sumario_Encuestas no encontrado\n";
+        while ($linea = <SUMARIO>){
+            my $unNumeroEncuesta;
+            ($unNumeroEncuesta) = ($linea =~ /^[^,]*,[^,]*,([^,]*),.*/);
+            push (@numeros_Encuesta, $unNumeroEncuesta);
+        }
+        close (SUMARIO);    
+        break;
+    }
+    if ($elemento =~ /\[\d*\.\.\d*\]/){
+        (my $inicio, my $final)= ($elemento =~ /\[(\d*)\.\.(\d*)\]/);
+        my @elemAAgregar= ($inicio..$final);
+        push (@numeros_Encuesta, @elemAAgregar);
+    }
 }
 
 foreach $elemento (@sitios_Encuesta){
-	if ($elemento eq '*') {
-		@sitios_Encuesta= ("P","L","S","O","D");
-		break;
-	}
+    if ($elemento eq '*') {
+        @sitios_Encuesta= ("P","L","S","O","E");
+        break;
+    }
 }
 
 print "@encuestadores\n";
@@ -155,11 +159,11 @@ print "@orden\n";
 
 #####################################################################################################################################################
 
-#my @encuestadores = ("pepe","andrea","roberto") ;		#encuestadores que entran en la consulta
-#my @codigos_Encuesta = ("E04","E01","E03","E05");		#codigos que entran en la consulta
-#my @numeros_Encuesta = (0..1500);				#numeros que entran en la consulta
-#my @sitios_Encuesta = ("S","P","E");				#sitios que entran en la consulta
-#my @orden = (0,0,0,0);						#array de 4 posiciones si participan de la clave
+#my @encuestadores = ("pepe","andrea","roberto") ;        #encuestadores que entran en la consulta
+#my @codigos_Encuesta = ("E04","E01","E03","E05");        #codigos que entran en la consulta
+#my @numeros_Encuesta = (0..1500);                #numeros que entran en la consulta
+#my @sitios_Encuesta = ("S","P","E");                #sitios que entran en la consulta
+#my @orden = (0,0,0,0);                        #array de 4 posiciones si participan de la clave
 
 #####################################################################################################################################################
 
@@ -181,99 +185,99 @@ my @rangos = (0,0,0,0,0,0);
 
 ##VEO SI ES UN UNICO INFORME LO RESUELVO ACA
 if ($cantidad_Numero_Encuesta == 1){
-	print "CONSULTA PEDORRA => LA RESUELVO ACA\n";
-	
-	#relevo info de sumario
+    print "CONSULTA PEDORRA => LA RESUELVO ACA\n";
+    
+    #relevo info de sumario
 
-	open ( SUMARIOENCUESTAS, "<$archivo_Sumario_Encuestas") || die "ERROR: Archivo $archivo_Sumario_Encuestas no encontrado\n";
-	my $idEncuestador;my $unaFecha;my $unNroEncuesta;my $unCodEncuesta;my $unPuntajeObtenido;my $unCodCliente;my $unSitio;my $unaModalidad;my $unaPerRelevada;
-	while ($linea = <SUMARIOENCUESTAS>){
-		if ( $linea =~ /^[^,]*,[^,]*,$numeros_Encuesta[0],[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*/ ){
-			($idEncuestador,$unaFecha,$unNroEncuesta,$unCodEncuesta,$unPuntajeObtenido,$unCodCliente,$unSitio,$unaModalidad,$unaPerRelevada) = ($linea =~ /^([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)/);
-		chomp ($unaPerRelevada);
-		}
-	}
-	close ( SUMARIOENCUESTAS); 
+    open ( SUMARIOENCUESTAS, "<$archivo_Sumario_Encuestas") || die "ERROR: Archivo $archivo_Sumario_Encuestas no encontrado\n";
+    my $idEncuestador;my $unaFecha;my $unNroEncuesta;my $unCodEncuesta;my $unPuntajeObtenido;my $unCodCliente;my $unSitio;my $unaModalidad;my $unaPerRelevada;
+    while ($linea = <SUMARIOENCUESTAS>){
+        if ( $linea =~ /^[^,]*,[^,]*,$numeros_Encuesta[0],[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*/ ){
+            ($idEncuestador,$unaFecha,$unNroEncuesta,$unCodEncuesta,$unPuntajeObtenido,$unCodCliente,$unSitio,$unaModalidad,$unaPerRelevada) = ($linea =~ /^([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)/);
+        chomp ($unaPerRelevada);
+        }
+    }
+    close ( SUMARIOENCUESTAS); 
 
-	#relevo info del encuestador
+    #relevo info del encuestador
 
-	open ( ENCUESTAS, "<$archivo_Maestro_Encuestas") || die "ERROR: Archivo $archivo_Maestro_Encuestas no encontrado\n";
-	my $cantidadPreguntas; my $nombreEncuesta; my $colorEncuesta;
-	while ($linea = <ENCUESTAS>){
-		if ( $linea =~ /^$unCodEncuesta,/ ){
-			($nombreEncuesta,$cantidadPreguntas) = ($linea =~ /^[^,]*,([^,]*),([^,]*),.*/);
-			@rangos = ($linea =~ m/^[^,]*,[^,]*,[^,]*,([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)/g);
-		}
-	}
-	close ( ENCUESTAS);
+    open ( ENCUESTAS, "<$archivo_Maestro_Encuestas") || die "ERROR: Archivo $archivo_Maestro_Encuestas no encontrado\n";
+    my $cantidadPreguntas; my $nombreEncuesta; my $colorEncuesta;
+    while ($linea = <ENCUESTAS>){
+        if ( $linea =~ /^$unCodEncuesta,/ ){
+            ($nombreEncuesta,$cantidadPreguntas) = ($linea =~ /^[^,]*,([^,]*),([^,]*),.*/);
+            @rangos = ($linea =~ m/^[^,]*,[^,]*,[^,]*,([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)/g);
+        }
+    }
+    close ( ENCUESTAS);
 
-	#relevo info de la encuesta
+    #relevo info de la encuesta
 
-	open ( ENCUESTADORES, "<$archivo_Maestro_Encuestadores") || die "ERROR: Archivo $archivo_Maestro_Encuestadores no encontrado\n";
-	my $nombreEncuestador;
+    open ( ENCUESTADORES, "<$archivo_Maestro_Encuestadores") || die "ERROR: Archivo $archivo_Maestro_Encuestadores no encontrado\n";
+    my $nombreEncuestador;
 
-	while ($linea = <ENCUESTADORES>){
-		if ( $linea =~ /^[^,]*,[^,]*,$idEncuestador,.*/ ){
-			($nombreEncuestador) = ($linea =~ /^[^,]*,([^,]*),.*/);
-			
-		}
-	}
-	close ( ENCUESTADORES);
+    while ($linea = <ENCUESTADORES>){
+        if ( $linea =~ /^[^,]*,[^,]*,$idEncuestador,.*/ ){
+            ($nombreEncuestador) = ($linea =~ /^[^,]*,([^,]*),.*/);
+            
+        }
+    }
+    close ( ENCUESTADORES);
 
-	#evaluo el color de la encuesta
+    #evaluo el color de la encuesta
 
-	if ( $unPuntajeObtenido <= $rangos[1] && $unPuntajeObtenido >= $rangos[0] ) {
-		#ROJO
-		$colorEncuesta = "Rojo"; 		
-	}
-	if ( $unPuntajeObtenido <= $rangos[3] && $unPuntajeObtenido >= $rangos[2] ) {
-		#AMARILLO
-		$colorEncuesta = "Amarillo";
-	}
-	if ( $unPuntajeObtenido <= $rangos[5] && $unPuntajeObtenido >= $rangos[4] ) {
-		#VERDE
-		$colorEncuesta = "Verde";
-	}
+    if ( $unPuntajeObtenido <= $rangos[1] && $unPuntajeObtenido >= $rangos[0] ) {
+        #ROJO
+        $colorEncuesta = "Rojo";         
+    }
+    if ( $unPuntajeObtenido <= $rangos[3] && $unPuntajeObtenido >= $rangos[2] ) {
+        #AMARILLO
+        $colorEncuesta = "Amarillo";
+    }
+    if ( $unPuntajeObtenido <= $rangos[5] && $unPuntajeObtenido >= $rangos[4] ) {
+        #VERDE
+        $colorEncuesta = "Verde";
+    }
 
 
-	#escribo el informe
-	if ( $informe == 1){
-		open (INFORME, ">$archivo_Informe");
-		print INFORME "Encuesta Nro: $unNroEncuesta realizada por $idEncuestador + $nombreEncuestador";
-		print INFORME " el dia ", substr ($unaFecha,0,2),"/",substr ($unaFecha,2,2),"/",substr ($unaFecha,4,4), "\n";
-		print INFORME "Cliente $unCodCliente, Modalidad $unaModalidad, sitio $unSitio, persona $unaPerRelevada\n";
-		print INFORME "Encuesta Aplicada: $unCodEncuesta/$nombreEncuesta compuesta por $cantidadPreguntas preguntas\n";
-		print INFORME "Puntaje obtenido: $unPuntajeObtenido calificación: $colorEncuesta\n";
+    #escribo el informe
+    if ( $informe == 1){
+        open (INFORME, ">$archivo_Informe");
+        print INFORME "Encuesta Nro: $unNroEncuesta realizada por $idEncuestador + $nombreEncuestador";
+        print INFORME " el dia ", substr ($unaFecha,6,2),"/",substr ($unaFecha,4,2),"/",substr ($unaFecha,0,4), "\n";
+        print INFORME "Cliente $unCodCliente, Modalidad $unaModalidad, sitio $unSitio, persona $unaPerRelevada\n";
+        print INFORME "Encuesta Aplicada: $unCodEncuesta/$nombreEncuesta compuesta por $cantidadPreguntas preguntas\n";
+        print INFORME "Puntaje obtenido: $unPuntajeObtenido calificación: $colorEncuesta\n";
 
-		close(INFORME);
-	}
-	
-	if ( $imprime == 1){
-		print "Encuesta Nro: ";
-		print BOLD RED"$unNroEncuesta";
-		print " realizada por ";
-		print BOLD RED"$idEncuestador + $nombreEncuestador";
-		print " el dia ";
-		print BOLD RED substr ($unaFecha,0,2),"/",substr ($unaFecha,2,2),"/",substr ($unaFecha,4,4),"\n";
-		print "Cliente ";
-		print BOLD RED "$unCodCliente";
-		print ", Modalidad ";
-		print BOLD RED "$unaModalidad";
-		print ", sitio ";
-		print BOLD RED "$unSitio";
-		print ", persona ";
-		print BOLD RED "$unaPerRelevada\n";
-		print "Encuesta Aplicada: ";
-		print BOLD RED "$unCodEncuesta/$nombreEncuesta";
-		print " compuesta por ";
-		print BOLD RED "$cantidadPreguntas";
-		print " preguntas\nPuntaje obtenido: ";
-		print BOLD RED "$unPuntajeObtenido ";
-		print "calificación: ";
-		print BOLD RED "$colorEncuesta\n";		
-	}
+        close(INFORME);
+    }
+    
+    if ( $imprime == 1){
+        print "Encuesta Nro: ";
+        print BOLD RED"$unNroEncuesta";
+        print " realizada por ";
+        print BOLD RED"$idEncuestador + $nombreEncuestador";
+        print " el dia ";
+        print BOLD RED substr ($unaFecha,6,2),"/",substr ($unaFecha,4,2),"/",substr ($unaFecha,0,4),"\n";
+        print "Cliente ";
+        print BOLD RED "$unCodCliente";
+        print ", Modalidad ";
+        print BOLD RED "$unaModalidad";
+        print ", sitio ";
+        print BOLD RED "$unSitio";
+        print ", persona ";
+        print BOLD RED "$unaPerRelevada\n";
+        print "Encuesta Aplicada: ";
+        print BOLD RED "$unCodEncuesta/$nombreEncuesta";
+        print " compuesta por ";
+        print BOLD RED "$cantidadPreguntas";
+        print " preguntas\nPuntaje obtenido: ";
+        print BOLD RED "$unPuntajeObtenido ";
+        print "calificación: ";
+        print BOLD RED "$colorEncuesta\n";        
+    }
 
-	exit 0;
+    exit 0;
 }
 
 
@@ -289,15 +293,15 @@ my $lineas_Post_Filtro;
 ##APLICO EL FILTRO DEL USUARIO
 open ( SUMARIOENCUESTAS, "<$archivo_Sumario_Encuestas") || die "ERROR: Archivo $archivo_Sumario_Encuestas no encontrado\n";
 while ($linea = <SUMARIOENCUESTAS>){
-	print "$linea";
-	if ( $linea =~ /^($ERencuestadores),[^,]*,($ERnumeros),($ERcodigos),[^,]*,[^,]*,($ERsitios),[^,]*,[^,]*/ ){
-	print "MACHEA\n\n";
-	$lineas_Post_Filtro = $lineas_Post_Filtro . $linea
-	}
-	else{
-	print "NO NO\n\n\n";
-	}
-	
+    print "$linea";
+    if ( $linea =~ /^($ERencuestadores),[^,]*,($ERnumeros),($ERcodigos),[^,]*,[^,]*,($ERsitios),[^,]*,[^,]*/ ){
+    print "MACHEA\n\n";
+    $lineas_Post_Filtro = $lineas_Post_Filtro . $linea
+    }
+    else{
+    print "NO NO\n\n\n";
+    }
+    
 }
 close (SUMARIOENCUESTAS);
 
@@ -309,78 +313,80 @@ print "@lineas_Post_Filtro\n";
 my @ERclave = (\$a,\$a,\$a,\$a);
 #veo que campos entran en la agrupacion para determinar claves en el hash
 for ( my $i = 1 ; $i <= 4 ; $i++){
-	if ($orden[$i-1] == 1) { 
+    if ($orden[$i-1] == 1) { 
 
-		switch ($i) {
+        switch ($i) {
 
-			case "1"	{ $ERclave[0] = \$1; }
-			case "2"	{ $ERclave[1] = \$2; }
-			case "3"	{ $ERclave[2] = \$3; }
-			case "4"	{ $ERclave[3] = \$4; }
-		}  
-	}
+            case "1"    { $ERclave[0] = \$1; }
+            case "2"    { $ERclave[1] = \$2; }
+            case "3"    { $ERclave[2] = \$3; }
+            case "4"    { $ERclave[3] = \$4; }
+        }  
+    }
 }
 
 
 
-my %hash_Informe; 	# HASH : clave = concatenacion de los atributos que se seleccionen // valor = concatenacion (verdes;amarillos;rojos)
+my %hash_Informe;     # HASH : clave = concatenacion de los atributos que se seleccionen // valor = concatenacion (verdes;amarillos;rojos)
 my $unaClave;my $unPuntaje;my $unCodigo;my @arrayVAR;my $stringVAR;
 @rangos = (0,0,0,0,0,0);
 
 if (@lineas_Post_Filtro == 0){
-	print "No existen resultados que cumplan los requisitos.\n";
-	exit 0;
+    print "No existen resultados que cumplan los requisitos.\n";
+    exit 0;
 }
 
 #veamos por cada linea a que clave del hash pertenece y agregamos su valor (verde, amarillo, rojo)
 foreach $linea (@lineas_Post_Filtro){
-	print "LINEA A PROCESAR: $linea\n";
-	$unaClave = $linea;
+    print "LINEA A PROCESAR: $linea\n";
+    $unaClave = $linea;
 
-	$unaClave =~ s/^([^,]*),[^,]*,([^,]*),([^,]*),[^,]*,[^,]*,([^,]*),[^,]*,[^,]*/${$ERclave[0]} ${$ERclave[1]} ${$ERclave[2]} ${$ERclave[3]} /;
-	
-	print "CLAVE : $unaClave\n";
-	($unCodigo, $unPuntaje) = ($linea =~ /^[^,]*,[^,]*,[^,]*,([^,]*),([^,]*),[^,]*,[^,]*,[^,]*,[^,]*/);
+    $unaClave =~ s/^([^,]*),[^,]*,([^,]*),([^,]*),[^,]*,[^,]*,([^,]*),[^,]*,[^,]*/${$ERclave[0]} ${$ERclave[1]} ${$ERclave[2]} ${$ERclave[3]}/;
+    $unaClave =~ s/^ (.*)/$1/;
+    $unaClave =~ s/  +/ /g;
+    
+    print "CLAVE : $unaClave\n";
+    ($unCodigo, $unPuntaje) = ($linea =~ /^[^,]*,[^,]*,[^,]*,([^,]*),([^,]*),[^,]*,[^,]*,[^,]*,[^,]*/);
 
-	#vemos en el maestro el los rangos
-	open ( MAESTROENCUESTAS, "<$archivo_Maestro_Encuestas") || die "ERROR: Archivo $archivo_Maestro_Encuestas no encontrado\n";
+    #vemos en el maestro el los rangos
+    open ( MAESTROENCUESTAS, "<$archivo_Maestro_Encuestas") || die "ERROR: Archivo $archivo_Maestro_Encuestas no encontrado\n";
 
-	while ( $linea = <MAESTROENCUESTAS> ){
-		if ( $linea =~ /^$unCodigo/ ){
-			@rangos = ($linea =~ m/^[^,]*,[^,]*,[^,]*,([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)/g);
-			print "RANGOS: @rangos\n";
-		}
-	}
-	close (MAESTROENCUESTAS);
+    while ( $linea = <MAESTROENCUESTAS> ){
+        if ( $linea =~ /^$unCodigo/ ){
+            @rangos = ($linea =~ m/^[^,]*,[^,]*,[^,]*,([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)/g);
+            print "RANGOS: @rangos\n";
+        }
+    }
+    close (MAESTROENCUESTAS);
 
-	#si la clave no existia en el hash aun, la creamos
-	if ( ! exists $hash_Informe{$unaClave} ){
-		#esta clave no tenia ninguna coicidencia aun
-		print "la Clave $unaClave aun no tenia ninguna aparicion en el hash\n";
-		$hash_Informe{$unaClave} = "0;0;0";
-	}	
+    #si la clave no existia en el hash aun, la creamos
+    if ( ! exists $hash_Informe{$unaClave} ){
+        #esta clave no tenia ninguna coicidencia aun
+        print "la Clave $unaClave aun no tenia ninguna aparicion en el hash\n";
+        $hash_Informe{$unaClave} = "0;0;0";
+    }    
 
-	#sumamos al hash un 1 en verde o amarillo o rojo segun corresponda
-	$stringVAR = $hash_Informe{$unaClave};
-	@arrayVAR = split (";",$stringVAR);
+    #sumamos al hash un 1 en verde o amarillo o rojo segun corresponda
+    $stringVAR = $hash_Informe{$unaClave};
+    @arrayVAR = split (";",$stringVAR);
 
-	if ( $unPuntaje <= $rangos[1] && $unPuntaje >= $rangos[0] ) {
-		#ROJO
-		$arrayVAR[2] += 1; 		
-	}
-	if ( $unPuntaje <= $rangos[3] && $unPuntaje >= $rangos[2] ) {
-		#AMARILLO
-		$arrayVAR[1] += 1;
-	}
-	if ( $unPuntaje <= $rangos[5] && $unPuntaje >= $rangos[4] ) {
-		#VERDE
-		$arrayVAR[0] += 1;
-	}
-	
-	$stringVAR = join (";",@arrayVAR);
-	$hash_Informe{$unaClave} = ($stringVAR);
+    if ( $unPuntaje <= $rangos[1] && $unPuntaje >= $rangos[0] ) {
+        #ROJO
+        $arrayVAR[2] += 1;         
+    }
+    if ( $unPuntaje <= $rangos[3] && $unPuntaje >= $rangos[2] ) {
+        #AMARILLO
+        $arrayVAR[1] += 1;
+    }
+    if ( $unPuntaje <= $rangos[5] && $unPuntaje >= $rangos[4] ) {
+        #VERDE
+        $arrayVAR[0] += 1;
+    }
+    
+    $stringVAR = join (";",@arrayVAR);
+    $hash_Informe{$unaClave} = ($stringVAR);
 
-	
+    
 
 }
 
@@ -390,40 +396,40 @@ my @puntajes_Totales=(0,0,0);
 
 if ( $informe == 1){
 
-	open ( INFORME, ">$archivo_Informe");
-	
-	printf INFORME "Listado";
-	printf INFORME "%25s ROJO";
-	printf INFORME "%8s AMARILLO";
-	printf INFORME "%7s VERDE\n\n";
-	foreach $unaClave (sort keys(%hash_Informe)){
-		$stringVAR = $hash_Informe{$unaClave};
-		@arrayVAR = split (";",$stringVAR);
-		printf INFORME ("%s\t%20s\t%10s\t%10s\n" ,$unaClave,$arrayVAR[0],$arrayVAR[1],$arrayVAR[2]);
-		$puntajes_Totales[0]+=$arrayVAR[0];
-		$puntajes_Totales[1]+=$arrayVAR[1];
-		$puntajes_Totales[2]+=$arrayVAR[2];
-	}
-	printf INFORME ("%s\t%20s\t%10s\t%10s\n", "Totales:", $puntajes_Totales[0], $puntajes_Totales[1], $puntajes_Totales[2]) ;
-	
-	close (INFORME)
+    open ( INFORME, ">$archivo_Informe");
+    
+    printf INFORME "Listado";
+    printf INFORME "%25s ROJO";
+    printf INFORME "%8s AMARILLO";
+    printf INFORME "%7s VERDE\n\n";
+    foreach $unaClave (sort keys(%hash_Informe)){
+        $stringVAR = $hash_Informe{$unaClave};
+        @arrayVAR = split (";",$stringVAR);
+        printf INFORME ("%-33s%3s%13s%3s%11s%3s\n",$unaClave,$arrayVAR[0]," ",$arrayVAR[1]," ",$arrayVAR[2]);
+        $puntajes_Totales[0]+=$arrayVAR[0];
+        $puntajes_Totales[1]+=$arrayVAR[1];
+        $puntajes_Totales[2]+=$arrayVAR[2];
+    }
+    printf INFORME ("\n%-33s%3s%13s%3s%11s%3s","Totales:",$puntajes_Totales[0]," ",$puntajes_Totales[1]," ",$puntajes_Totales[2]);
+    
+    close (INFORME)
 }
 @puntajes_Totales=(0,0,0);
 if ( $imprime == 1){
 
-	printf "\n\nListado";
-	printf RED "%25s ROJO";
-	printf YELLOW "%8s AMARILLO";
-	printf GREEN "%7s VERDE\n\n";
-	foreach $unaClave (sort keys(%hash_Informe)){
-		$stringVAR = $hash_Informe{$unaClave};
-		@arrayVAR = split (";",$stringVAR);
-		printf ("%s\t%20s\t%10s\t%10s\n" ,$unaClave,$arrayVAR[0],$arrayVAR[1],$arrayVAR[2]);
-		$puntajes_Totales[0]+=$arrayVAR[0];
-		$puntajes_Totales[1]+=$arrayVAR[1];
-		$puntajes_Totales[2]+=$arrayVAR[2];
-		
-	}
-	printf ("%s\t%20s\t%10s\t%10s\n", "Totales:", $puntajes_Totales[0], $puntajes_Totales[1], $puntajes_Totales[2]); 
+    printf "\n\nListado";
+    printf RED "%25s ROJO";
+    printf YELLOW "%8s AMARILLO";
+    printf GREEN "%7s VERDE\n\n";
+    foreach $unaClave (sort keys(%hash_Informe)){
+        $stringVAR = $hash_Informe{$unaClave};
+        @arrayVAR = split (";",$stringVAR);
+        printf ("%-33s%3s%13s%3s%11s%3s\n",$unaClave,$arrayVAR[0]," ",$arrayVAR[1]," ",$arrayVAR[2]);
+        $puntajes_Totales[0]+=$arrayVAR[0];
+        $puntajes_Totales[1]+=$arrayVAR[1];
+        $puntajes_Totales[2]+=$arrayVAR[2];
+        
+    }
+    printf ("\n%-33s%3s%13s%3s%11s%3s\n\n","Totales:",$puntajes_Totales[0]," ",$puntajes_Totales[1]," ",$puntajes_Totales[2]); 
 }
 
