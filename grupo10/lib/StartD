@@ -86,21 +86,22 @@ INFO=''
 
 if [ $# != 1 ];then
     echo "Cantidad de parametros incorrectos"
-    exit $ERR_CANT_PARAM
+    return $ERR_CANT_PARAM
 fi
 
 if [ $1 = '--help' -o $1 = "-h" ]
 then
     mostrarAyuda    
-    exit 0
+    return 0
 fi
 
 if [ ! -f "$1" ];then
     echo "Archivo de proceso Inexistente"
     #loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
-    exit $ERR_ARCH_NO_EXISTE
+    return $ERR_ARCH_NO_EXISTE
 fi
 
 
 llamada_detectar "$1"
 eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
+return 0
