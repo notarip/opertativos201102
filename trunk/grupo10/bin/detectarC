@@ -1,7 +1,8 @@
 #!/bin/bash
 
 
-function mostrarAyuda {
+function mostrarAyuda 
+{
 	echo
 	eco "MODO DE USO: . detectarC [OPCIONES]" "$GRE"
 	eco
@@ -238,6 +239,8 @@ function verifica_maestro_encuestadores
 	#encuestadores.mae
 	ENCUESTADOR=$(echo $1 | cut -d . --field=1)
 	FECHA=$(echo $1 | cut -d . --field=2)
+	NOW=$(date +%Y%m%d)
+
 
 	debug "validando encuestador -> $ENCUESTADOR"
 	debug "validando fecha -> $FECHA"
@@ -262,7 +265,7 @@ function verifica_maestro_encuestadores
 		debug "fecha desde -> $FECHAD"
 		debug "fecha hasta -> $FECHAA"
 
-		if [ "$FECHAD" -le "$FECHA" ] && [ "$FECHAA" -ge "$FECHA" ];then
+		if [ "$FECHAD" -le "$FECHA" -a "$FECHAA" -ge "$FECHA" -a "$FECHA" -le "$NOW" ];then
 
 			ARC_VALIDO=S
 		
@@ -373,9 +376,12 @@ function llama_a_sumar
 	verifica_instancia 'sumarC'
 	verifica_preparados
 
-	if [ $INSTANCIA != S ] && [ $HAY_PREPA = S ];then
+	if [ "$INSTANCIA" != S ] && [ "$HAY_PREPA" = S ];then
 		sumarC &
 		debug 'llamando a sumarC...'
+		PID=$(ps | grep '.*sumarC.*' | cut -d ' ' --fields=1)
+		PID=$(echo "$PID" | cut -d ' ' --field=1)
+		eco "Sumar corriendo bajo el Nro.: $PID" "$RED"
 	else
 		debug "sumar activo --> $INSTANCIA, hay preparados --> $HAY_PREPA"
 	fi
@@ -385,7 +391,7 @@ function llama_a_sumar
 function terminar
 {
 	#como termina cuando lo stopean
-	debug "me quieren matar !!!!"
+	debug "apagando demonio..."
 	exit 0
 }
 

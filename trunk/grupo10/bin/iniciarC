@@ -214,7 +214,8 @@ function verificar_variables
 function resolver_path
 {
 	GRUPO=$(pwd)
-	export GRUPO=$(echo "$GRUPO" | sed -n "s/\(.*\)\(\/bin.*\)/\1/p")
+	GRUPO=${GRUPO%/*}
+	export GRUPO
 }
 
 
@@ -405,7 +406,7 @@ function llamada_detectar
 		debug "detectar esta corriendo..."
 	fi
 
-	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=2)
+	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=1)
 	PID=$(echo "$PID" | cut -d ' ' --field=1)
 }
 
