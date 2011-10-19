@@ -63,15 +63,15 @@ INFO=''
 
 if [ $# != 1 ];then
     echo "Cantidad de parametros incorrectos"
-    exit $ERR_CANT_PARAM
+    return $ERR_CANT_PARAM
 fi
 
 if [ $1 = '--help' -o $1 = "-h" ]
 then
     mostrarAyuda    
-    exit 0
+    return 0
 fi
 
 
 verifico_detectar "$1"
-
+return 0
