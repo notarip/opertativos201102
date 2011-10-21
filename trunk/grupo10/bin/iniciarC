@@ -16,6 +16,18 @@ function mostrarAyuda {
 	return 0
 }
 
+obtener_version_bash
+{
+
+	VERSION=$(bash --version | grep '.*versión 4.2.10.*')
+	if [ -n "$VERSION" ];then
+		VERSION=1
+	else
+		VERSION=2
+	fi
+
+}
+
 
 function verificar_parametros
 {
@@ -406,8 +418,13 @@ function llamada_detectar
 		debug "detectar esta corriendo..."
 	fi
 
-	PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=1)
-	PID=$(echo "$PID" | cut -d ' ' --field=1)
+	if [ "$VERSION" -eq 1 ];then
+		PID=$(ps -C "detectarC" | head -n 2 | grep ".*detectarC.*" | cut -d ' ' --field=2) #laptop
+	else
+		PID=$(ps -C "detectarC" | head -n 2 | grep ".*detectarC.*" | cut -d ' ' --field=1) #labo
+	fi
+	#PID=$(ps | grep '.*detectarC.*' | cut -d ' ' --fields=1)
+	#PID=$(echo "$PID" | cut -d ' ' --field=1)
 }
 
 
@@ -431,6 +448,8 @@ verificar_variables
 
 if [ "$CONTINUA" = "S" ];then
 
+	obtener_version_bash
+	
 	definir_variables
 
 	verificar_comandos
