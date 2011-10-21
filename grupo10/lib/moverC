@@ -113,5 +113,5 @@ then
 else
 	loguearC "moverC" I "Se movio el archivo exitosamente desde la consola"
 fi
-echo "Archivo movido exitosamente"
+
 exit 0
