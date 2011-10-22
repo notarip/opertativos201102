@@ -127,7 +127,7 @@ function instalar_componente
 			cp "$GRUPO/inst/$1" "$GRUPO$DEFBINDIR/$1" 
 		else
 			mostrar_grabar "Error en la instalacion, no se puede encontrar el archivo de comando $1" ES
-			fin
+			fin "cancelar"
 		fi
 	fi
 }
@@ -147,25 +147,27 @@ function generar_directorios_archivos
 	mkdir -p $GRUPO/nolistos
 	mkdir -p $GRUPO/ya
 	mostrar_grabar "moviendo archivos...." I
+	if [ -f "$GRUPO/inst/errores.mae" ];then
+		cp "$GRUPO/inst/errores.mae" "$GRUPO/mae/errores.mae"
+		cp "$GRUPO/inst/errores.mae" "$GRUPO/temp/errores.mae"		
+	else
+		mostrar_grabar "Error en la instalacion, no se puede encontrar el archivo errores.mae" I
+		fin "cancelar"
+	fi
 	if [ -f "$GRUPO/inst/encuestas.mae" ];then
 		cp "$GRUPO/inst/encuestas.mae" "$GRUPO/mae/encuestas.mae" 
 	else
-		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo encuestas.mae" E
+		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo encuestas.mae" A
 	fi
 	if [ -f "$GRUPO/inst/preguntas.mae" ];then
 		cp "$GRUPO/inst/preguntas.mae" "$GRUPO/mae/preguntas.mae" 
 	else
-		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo preguntas.mae" E
+		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo preguntas.mae" A
 	fi
 	if [ -f "$GRUPO/inst/encuestadores.mae" ];then
 		cp "$GRUPO/inst/encuestadores.mae" "$GRUPO/mae/encuestadores.mae" 
 	else
-		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo encuestadores.mae" E
-	fi
-	if [ -f "$GRUPO/inst/errores.mae" ];then
-		cp "$GRUPO/inst/errores.mae" "$GRUPO/mae/errores.mae" 
-	else
-		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo errores.mae" E
+		mostrar_grabar "Advertencia en la instalacion, no se puede encontrar el archivo encuestadores.mae" A
 	fi
 	instalar_componente "iniciarC" 1
 	instalar_componente "detectarC" 2
@@ -349,8 +351,7 @@ function configurar_instalacion
 		configurar_logsize
 	fi
 	if [ "$RESPUESTA" = "c" ];then
-		mostrar_grabar "Proceso de instalación cancelado" I
-		fin
+		fin "cancelar"
 	fi
 	if [ "$RESPUESTA" = "v" ];then
 		configurar_instalacion
@@ -361,6 +362,11 @@ function configurar_instalacion
 function fin
 {
 	#cerrar el InstalarC.log
+	if [ "$#" = "1" ];then
+		if [ "$1" = "cancelar" ];then
+			mostrar_grabar "Proceso de instalación cancelado" I
+		fi
+	fi
 	rm -fr $GRUPO/temp
 	exit 0
 }
@@ -412,6 +418,8 @@ function instalacion_parcial
 			INSTALADOS[4]="NO"
 			setParamDefault
 			instalacion_completa
+		else
+			fin "cancelar"
 		fi	
 	fi
 }
@@ -483,7 +491,7 @@ function instalacion_completa
 			mostrar_grabar "$RESPUESTA" I G
 			RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
 			if [ "$RESPUESTA" != "SI" ];then
-				fin
+				fin "cancelar"
 			fi
 			generar_directorios_archivos
 			actualizar_archivo_configuracion
@@ -492,6 +500,8 @@ function instalacion_completa
 			mostrar_grabar "* FIN del proceso de Instalación Copyright SisOp (c)2011	*" I
 			mostrar_grabar "*****************************************************************" I	
 		fi
+	else
+		fin "cancelar"
 	fi
 }
 
@@ -575,6 +585,7 @@ GRUPO="$GRUPO/$0"
 GRUPO=$(echo $GRUPO | sed -n "s/\(.*\)\(\/inst\/.*\)/\1/p")
 LIBDIR="$GRUPO/lib"
 PATH=${PATH}:$LIBDIR
+DATAMAE=$GRUPO/temp
 mkdir -p $GRUPO/temp
 #GRUPO=${GRUPO%/*}
 export GRUPO
@@ -582,6 +593,7 @@ export LOGSIZE=400000
 export LOGEXT=log
 export LOGDIR="$GRUPO/inst"
 export PATH
+export DATAMAE
 chmod 777 "$LIBDIR"/*
 DATE=$(date "+%d/%m/%Y %k:%M:%S")
 mostrar_grabar "$DATE-$USERNAME-instalarC-I-Inicio de ejecucion" I G
