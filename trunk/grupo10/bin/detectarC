@@ -13,6 +13,16 @@ function mostrarAyuda
 	return 0
 }
 
+function obtener_version_bash
+{
+
+	VERSION=$(bash --version | grep '.*versión 4.2.10.*')
+	if [ -n "$VERSION" ];then
+		VERSION=1
+	else
+		VERSION=2
+	fi
+}
 
 function verificar_parametros
 {
@@ -23,8 +33,8 @@ function verificar_parametros
 
 		if [ "$1" -gt 1 ]
 		then
-			echo "Cantidad erronea de parametros, pruebe con -h."
-			log 2 "a lo sumo 1"
+			eco "Cantidad erronea de parametros, pruebe con -h." "$BLU"
+			#log 2 "a lo sumo 1"
 			exit $ERR_CANT_PARAM
 		fi
 
@@ -41,7 +51,7 @@ function verificar_parametros
 				echo
 				exit 0
 			else
-				echo "Parametro invalido, pruebe con --help  -h"
+				eco "Parametro invalido, pruebe con --help  -h" "$BLU"
 				exit $ERR_CANT_PARAM	
 			fi
 		fi
@@ -68,10 +78,10 @@ function log
 	#en $2 recibe el parametro opcional
 
 	if [ -n "$2" ];then
-		"$LIBDIR"/loguearC -s "detectarC" "$1" "$2"
+		loguearC -s "detectarC" "$1" "$2"
 		debug loguear -s "$1" "$2"
 	else
-		"$LIBDIR"/loguearC -s "detectarC" "$1"
+		loguearC -s "detectarC" "$1"
 		debug loguear -s "$1"
 	fi
 
@@ -379,13 +389,19 @@ function llama_a_sumar
 	if [ "$INSTANCIA" != S ] && [ "$HAY_PREPA" = S ];then
 		sumarC &
 		debug 'llamando a sumarC...'
-		PID=$(ps | grep '.*sumarC.*' | cut -d ' ' --fields=1)
-		PID=$(echo "$PID" | cut -d ' ' --field=1)
-		eco "Sumar corriendo bajo el Nro.: $PID" "$RED"
 	else
 		debug "sumar activo --> $INSTANCIA, hay preparados --> $HAY_PREPA"
 	fi
+
+	if [ "$VERSION" -eq 1 ];then
+		PID=$(ps -C "sumarC" | head -n 2 | grep ".*sumarC.*" | cut -d ' ' --field=1) #laptop
+	else
+		PID=$(ps -C "sumarC" | head -n 2 | grep ".*sumarC.*" | cut -d ' ' --field=1) #labo
+	fi
 	
+	if [ "$HAY_PREPA" = S ];then
+		eco "Sumar corriendo bajo el Nro.: $PID" "$RED"
+	fi
 }
 
 function terminar
@@ -411,14 +427,16 @@ BLU=36
 YEL=33
 STA=00
 
+obtener_version_bash
 
 verificar_parametros "$#" "$1"
 
 verificar_entorno
 
 if [ "$CONTINUA" != S ];then
-	ERR="11" #Entorno no inicializado
-	log $ERR ""
+	#ERR="11" #Entorno no inicializado
+	#log $ERR ""
+	eco "Entorno no inicializado." "$BLU"
 	exit $ERR_ENTORNO
 fi
 

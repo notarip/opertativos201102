@@ -16,7 +16,7 @@ function mostrarAyuda {
 	return 0
 }
 
-obtener_version_bash
+function obtener_version_bash
 {
 
 	VERSION=$(bash --version | grep '.*versión 4.2.10.*')
@@ -32,6 +32,7 @@ obtener_version_bash
 function verificar_parametros
 {
 	# Verificacion de cantidad de parametros y codigos numericos
+	SALIR='N'	
 	
 	if [ "$1" -ne 0 ]
 	then
@@ -39,25 +40,26 @@ function verificar_parametros
 		if [ "$1" -gt 1 ]
 		then
 			echo "Cantidad erronea de parametros, pruebe con -h."
-			log 2 "a lo sumo 1"
-			exit $ERR_CANT_PARAM
-		fi
-
-		if [ "$2" = '--help' -o "$2" = "-h" ]
-		then
-			mostrarAyuda	
-			exit 0
+			#log 2 "a lo sumo 1"
+			SALIR='S'
 		else
-			if [ "$2" = "--version" -o "$2" = "-v" ]
+
+			if [ "$2" = '--help' -o "$2" = "-h" ]
 			then
-				echo
-				eco "iniciarC v 1.0" "$GRE"
-				eco "Escrito por pnotari@fi.uba.ar" "$GRE"
-				echo
-				exit 0
+				mostrarAyuda	
+				SALIR='S'
 			else
-				echo "Parametro invalido, pruebe con --help  -h"
-				exit $ERR_CANT_PARAM	
+				if [ "$2" = "--version" -o "$2" = "-v" ]
+				then
+					echo
+					eco "iniciarC v 1.0" "$GRE"
+					eco "Escrito por pnotari@fi.uba.ar" "$GRE"
+					echo
+					SALIR='S'
+				else
+					echo "Parametro invalido, pruebe con --help  -h"
+					SALIR='S'
+				fi
 			fi
 		fi
 	fi
@@ -419,7 +421,7 @@ function llamada_detectar
 	fi
 
 	if [ "$VERSION" -eq 1 ];then
-		PID=$(ps -C "detectarC" | head -n 2 | grep ".*detectarC.*" | cut -d ' ' --field=2) #laptop
+		PID=$(ps -C "detectarC" | head -n 2 | grep ".*detectarC.*" | cut -d ' ' --field=1) #laptop
 	else
 		PID=$(ps -C "detectarC" | head -n 2 | grep ".*detectarC.*" | cut -d ' ' --field=1) #labo
 	fi
@@ -442,34 +444,38 @@ INFO=''
 
 verificar_parametros "$#" "$1"
 
-resolver_path
+if [ "$SALIR" != 'S' ];then
 
-verificar_variables
+	resolver_path
 
-if [ "$CONTINUA" = "S" ];then
+	verificar_variables
 
-	obtener_version_bash
+	if [ "$CONTINUA" = "S" ];then
+
+		obtener_version_bash
 	
-	definir_variables
+		definir_variables
 
-	verificar_comandos
+		verificar_comandos
 
-	verificar_librerias
+		verificar_librerias
 
-	verificar_maestros
+		verificar_maestros
 
 
-	if [ -n "$INFO" ];then
-		eco "No se pudo iniciar el sistema consultar:"	"$GRE"
-		eco "$INFO" "$YEL"
-		eco "Se aconseja reinstalar la aplicación." $GRE
-	else
-		verificar_variables "S"		
-		eco "Inicialización del Ambiente Concluida \n" "$BLU"
-		eco "Ambiente: \n$SETEADAS" "$YEL"
-		export ENTORNO_OK="1"
-		llamada_detectar
-		eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
+		if [ -n "$INFO" ];then
+			eco "No se pudo iniciar el sistema consultar:"	"$GRE"
+			eco "$INFO" "$YEL"
+			eco "Se aconseja reinstalar la aplicación." $GRE
+		else
+			verificar_variables "S"		
+			eco "Inicialización del Ambiente Concluida \n" "$BLU"
+			eco "Ambiente: \n$SETEADAS" "$YEL"
+			export ENTORNO_OK="1"
+			llamada_detectar
+			eco "Demonio corriendo bajo el Nro.: $PID" "$RED"
+		fi
+
 	fi
-
 fi
+
