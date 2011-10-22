@@ -1,5 +1,29 @@
 #!/bin/bash
 
+mostrarAyuda() {
+	echo
+	echo "Realiza la instalacion del paquete Consultar, creando las estructuras de directorios y archivos, segun las especificaciones del usuario"
+	echo
+	echo "MODO DE USO: InstalarC [OPCION]"	
+	echo
+	echo "OPCIONES:"
+	echo "-h, --help    Muestra esta pantalla"
+	echo "-v, --version    Informa acerca de la version"
+	echo
+	echo "EJEMPLOS:"
+	echo
+	echo -e "InstalarC"
+	echo -e "Realiza la instalacion del paquete Consultar"
+	echo 
+	echo -e "InstalarC -h"
+	echo -e "muestra la pantalla de ayuda del Instalarc"
+	echo
+	echo -e "InstalarC -v"
+	echo -e "muestra la información de la version del InstalarC"
+	echo
+return 0
+}
+
 function unificar_respuestas
 {	
 	AUXRESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")
@@ -147,13 +171,7 @@ function generar_directorios_archivos
 	mkdir -p $GRUPO/nolistos
 	mkdir -p $GRUPO/ya
 	mostrar_grabar "moviendo archivos...." I
-	if [ -f "$GRUPO/inst/errores.mae" ];then
-		cp "$GRUPO/inst/errores.mae" "$GRUPO/mae/errores.mae"
-		cp "$GRUPO/inst/errores.mae" "$GRUPO/temp/errores.mae"		
-	else
-		mostrar_grabar "Error en la instalacion, no se puede encontrar el archivo errores.mae" I
-		fin "cancelar"
-	fi
+	cp "$GRUPO/inst/errores.mae" "$GRUPO/mae/errores.mae"
 	if [ -f "$GRUPO/inst/encuestas.mae" ];then
 		cp "$GRUPO/inst/encuestas.mae" "$GRUPO/mae/encuestas.mae" 
 	else
@@ -580,21 +598,61 @@ function getConfigParam
 	CONFIGPARAM=$(sed -n "s/$1 = //p" $GRUPO/conf/InstalarC.conf)
 }
 
+#**************************************Comienza el cuerpo del InstalarC****************************************************
 GRUPO=$(pwd)
 GRUPO="$GRUPO/$0"
 GRUPO=$(echo $GRUPO | sed -n "s/\(.*\)\(\/inst\/.*\)/\1/p")
 LIBDIR="$GRUPO/lib"
+#*******Se crea la carpeta donde van a estar los archivos temporales a usar
+mkdir -p $GRUPO/temp
+#*******Se hacen los preparativos para usar loguearC
+#*******Se cargan y exportan las variables requeridas por loguearC
 PATH=${PATH}:$LIBDIR
 DATAMAE=$GRUPO/temp
-mkdir -p $GRUPO/temp
-#GRUPO=${GRUPO%/*}
 export GRUPO
 export LOGSIZE=400000
 export LOGEXT=log
 export LOGDIR="$GRUPO/inst"
 export PATH
 export DATAMAE
+#*******Se setean los permisos de las librerias
 chmod 777 "$LIBDIR"/*
+
+#*******Se copia el archivo errores.mae a temp, para uso de manera temporal por loguearC 
+if [ -f "$GRUPO/inst/errores.mae" ];then
+	cp "$GRUPO/inst/errores.mae" "$GRUPO/temp/errores.mae"		
+else
+	mostrar_grabar "Error en la instalacion, no se puede encontrar el archivo errores.mae original. Instalación corrompida, consulte a su proveedor" I
+	fin "cancelar"
+fi
+
+#*******fin preparativos para uso del loguear
+
+#*******se evalúan parametros
+if [ $# -gt 1 ]
+then
+    mostrar_grabar "Cantidad erronea de parametros, se requieren a lo sumo 1" ES
+    fin "cancelar"
+fi
+
+if [ $# -eq 1 ];then
+	if [ $1 = '--help' -o $1 = "-h" ]
+	then
+	    mostrarAyuda    
+	    fin
+	fi
+	if [ $1 = "--version" -o $1 = "-v" ]
+	then
+    		echo
+   		echo "InstalarC v 1.0"
+    		echo "Escrito por Flavio Ferro"
+   		echo
+    		fin
+	fi
+	mostrar_grabar "el parametro ingresado es erroneo, ejecute InstalarC --help para obtener ayuda" ES
+	fin "cancelar"	
+fi 
+#*******como no hubo parametro alguno, arranca la ejecucion del InstalarC propiamente dicha
 DATE=$(date "+%d/%m/%Y %k:%M:%S")
 mostrar_grabar "$DATE-$USERNAME-instalarC-I-Inicio de ejecucion" I G
 verificar_instalacion
