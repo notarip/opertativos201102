@@ -150,7 +150,7 @@ function instalar_componente
 		if [ -f "$GRUPO/inst/$1" ];then
 			cp "$GRUPO/inst/$1" "$GRUPO$DEFBINDIR/$1" 
 		else
-			mostrar_grabar "Error en la instalacion, no se puede encontrar el archivo de comando $1" ES
+			mostrar_grabar "Error severo en la instalacion, no se puede encontrar el archivo de comando $1. Instalación corrompida, consulte a su proveedor" ES
 			fin "cancelar"
 		fi
 	fi
@@ -224,7 +224,7 @@ function configurar_logext
 			DEFLOGEXT=$(echo "$RESPUESTA" | sed -n "s/\.\(.*\)/\1/p")	
 			#DEFLOGEXT=$RESPUESTA
 		else
-			mostrar_grabar "error en el formato de extension ingresado, se espera empiece con punto y termine con digitos" I;		
+			mostrar_grabar "error en el formato de extension ingresado, se espera empiece con punto y termine con caracter alfa-numerico" I;	
 			configurar_logext		
 		fi	
 	fi
@@ -243,7 +243,7 @@ function configurar_logdir
 		if [ "$VALIDACION" != "" ];then
 			DEFLOGDIR=$RESPUESTA
 		else
-			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con digito, numero o _" I;		
+			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con un caracter alfa-numerico o _" I;		
 			configurar_logdir		
 		fi		
 		
@@ -263,7 +263,7 @@ function configurar_bindir
 		if [ "$VALIDACION" != "" ];then
 			DEFBINDIR=$RESPUESTA
 		else
-			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con digito, numero o _" I;		
+			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con un caracter alfa-numerico o _" I;
 			configurar_bindir		
 		fi	
 		
@@ -331,7 +331,7 @@ function configurar_arridir
 		if [ "$VALIDACION" != "" ];then
 			DEFARRIDIR=$RESPUESTA
 		else
-			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con digito, numero o _" I;		
+			mostrar_grabar "error en el armado del path, debe arrancar con / y terminar con un caracter alfa-numerico o _" I;
 			configurar_arridir		
 		fi		
 
