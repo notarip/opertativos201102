@@ -2,10 +2,10 @@
 
 # Codigos de colores para la terminal
 
-COLOR_A=33    #Amarillo
-COLOR_SE=00    #Normal
-COLOR_I=32     #Azul
-COLOR_E=31    #Rojo
+COLOR_A=33	#Amarillo
+COLOR_SE=00	#Normal
+COLOR_I=32 	#Azul
+COLOR_E=31	#Rojo
 
 # Codigos de errores
 
@@ -29,23 +29,23 @@ MENSAJE=$(echo "FECHA#USUARIO#TIPO DE MENSAJE#MENSAJE")
 echo -e "\E["00"m"$MENSAJE"">>"temp"
 echo "$1" | while read line
 do
-    FECHA=$(echo $line | sed -n "s/^\([^-]*\).*/\1/p")
-    FECHA=$(date -d "$FECHA" "+%d/%m/%Y %H:%M:%S")
-    USUARIO=$(echo $line | sed -n "s/^[^-]*-\([^-]*\).*/\1/p")
-    TIPO_MSJ=$(echo $line | sed -n "s/^[^-]*-[^-]*-[^-]*-\([^-]*\).*/\1/p")
-    MSJ=$(echo $line | sed -n "s/^[^-]*-[^-]*-[^-]*-[^-]*-\([^-]*\).*/\1/p")
+	FECHA=$(echo $line | sed -n "s/^\([^-]*\).*/\1/p")
+	FECHA=$(date -d "$FECHA" "+%d/%m/%Y %H:%M:%S")
+	USUARIO=$(echo $line | sed -n "s/^[^-]*-\([^-]*\).*/\1/p")
+	TIPO_MSJ=$(echo $line | sed -n "s/^[^-]*-[^-]*-[^-]*-\([^-]*\).*/\1/p")
+	MSJ=$(echo $line | sed -n "s/^[^-]*-[^-]*-[^-]*-[^-]*-\(.*\)/\1/p")
 
-    case $TIPO_MSJ in
+	case $TIPO_MSJ in
 
-        "E" ) COLOR=$COLOR_E;TIPO_MSJ="ERROR";;
-        "SE" ) COLOR=$COLOR_SE;TIPO_MSJ="ERROR SEVERO";;
-        "A" ) COLOR=$COLOR_A;TIPO_MSJ="ADVERTENCIA";;
-        "I" ) COLOR=$COLOR_I;TIPO_MSJ="INFORMACION";;
+		"E" ) COLOR=$COLOR_E;TIPO_MSJ="ERROR";;
+		"SE" ) COLOR=$COLOR_SE;TIPO_MSJ="ERROR SEVERO";;
+		"A" ) COLOR=$COLOR_A;TIPO_MSJ="ADVERTENCIA";;
+		"I" ) COLOR=$COLOR_I;TIPO_MSJ="INFORMACION";;
 
-    esac
+	esac
 
-    MENSAJE="$FECHA#$USUARIO#$TIPO_MSJ#$MSJ"
-    echo -e "\E["$COLOR"m"$MENSAJE"\033[0m">>"temp"
+	MENSAJE="$FECHA#$USUARIO#$TIPO_MSJ#$MSJ"
+	echo -e "\E["$COLOR"m"$MENSAJE"\033[0m">>"temp"
 done
 column -s \# -t temp | less -mR
 echo
@@ -62,12 +62,12 @@ echo
 echo "MODO DE USO: mirarC [OPCION] [ARGUMENTO] comando"
 echo
 echo "OPCIONES:"
-echo "-s        Muestra las entradas del log que contienen el string pasado como argumento"
-echo "-t        Muestra las entradas del log que son del tipo o tipos pasado como parametro (A,SE,I,E)"
-echo "-n        Muestra las ultimas N lineas del log. Si N es mayor que la cantidad total de lineas,"
-echo "        se muestra la totalidad del archivo"
-echo "-h,--help     Muestra esta pantalla"
-echo "-v, --version    Informa de la version"
+echo "-s		Muestra las entradas del log que contienen el string pasado como argumento"
+echo "-t		Muestra las entradas del log que son del tipo o tipos pasado como parametro (A,SE,I,E)"
+echo "-n		Muestra las ultimas N lineas del log. Si N es mayor que la cantidad total de lineas,"
+echo "		se muestra la totalidad del archivo"
+echo "-h,--help 	Muestra esta pantalla"
+echo "-v, --version	Informa de la version"
 echo
 return 0
 }
@@ -87,23 +87,23 @@ return 0
 
 if [ $# -eq 0 ]
 then
-    echo "Cantidad erronea de parametros"
-    loguearC -s mirarC $ERR_CANT_PARAM "como minimo 2"
-    exit $ERR_CANT_PARAM
+	echo "Cantidad erronea de parametros"
+	loguearC -s mirarC $ERR_CANT_PARAM "como minimo 2"
+	exit $ERR_CANT_PARAM
 fi
 
 #Mostrar pantalla de ayuda
 
 if [ "$1" = "-h" -o "$1" = "--help" ]
 then
-    mostrarAyuda
-    exit 0
+	mostrarAyuda
+	exit 0
 fi
 
 if [ "$1" = "-v" -o "$1" = "--version" ]
 then
-    mostrarVersion
-    exit 0
+	mostrarVersion
+	exit 0
 fi
 
 COMANDO=$(echo $BASH_ARGV | tr [:upper:] [:lower:])
@@ -112,74 +112,74 @@ ARCHIVO_LOG="$LOGDIR/$COMANDO.$LOGEXT"
 
 if [ ! -e $ARCHIVO_LOG ]
 then
-    echo "No se encontraron logs para el comando especificado"
-    loguearC mirarC E "No se encontraron logs para el comando especificado"
-    exit $ERR_LOG_NO_EXISTE
+	echo "No se encontraron logs para el comando especificado"
+	loguearC mirarC E "No se encontraron logs para el comando especificado"
+	exit $ERR_LOG_NO_EXISTE
 fi
 
 # Mostrar los ultimos N registros del log
 
 if [ $1 = "-n" ]
 then
-    expr "$2" + 1 &> /dev/null
-    if [ $? -eq 0 ]
-    then
-        CONTENIDO=$(tail -n $2 $ARCHIVO_LOG)
-        mostrarLog "$CONTENIDO"
-        exit 0
-    else
-        echo "Parametro no Numerico"
-        loguearC -s mirarC $ERR_PARAM_NO_NUM
-        exit $ERR_PARAM_NO_NUM
-    fi
+	expr "$2" + 1 &> /dev/null
+	if [ $? -eq 0 ]
+	then
+		CONTENIDO=$(tail -n $2 $ARCHIVO_LOG)
+		mostrarLog "$CONTENIDO"
+		exit 0
+	else
+		echo "Parametro no Numerico"
+		loguearC -s mirarC $ERR_PARAM_NO_NUM
+		exit $ERR_PARAM_NO_NUM
+	fi
 
-    if [ $# -ne 3 ] 
-    then
-        echo "Cantidad erronea de parametros"
-        loguearC -s mirarC $ERR_CANT_PARAM 3
-        exit $ERR_CANT_PARAM
-    fi
+	if [ $# -ne 3 ] 
+	then
+		echo "Cantidad erronea de parametros"
+		loguearC -s mirarC $ERR_CANT_PARAM 3
+		exit $ERR_CANT_PARAM
+	fi
 fi
 
 # Mostrar las lineas del archivo de log que correspondan a los tipos de msj pasados como parametro
 
 if [ $1 = "-t" ]
-then    
-    for ((ARG=2; ARG < $# ; ARG++))
-    do
-        if [ "${!ARG}" = "I" -o "${!ARG}" = "A" -o "${!ARG}" = "SE" -o "${!ARG}" = "E" ]
-        then
-            if [ "${!ARG}" = "SE" ]
-            then
-                TIPOS="$TIPOS""S"
-            else 
-                TIPOS="$TIPOS""${!ARG}"
-            fi
-        else
-            echo "Tipo de Mensaje Invalido"
-            loguearC -s mirarC $ERR_TIPO_MSJ
-            exit $ERR_TIPO_MSJ
-        fi
-    done
-    CONTENIDO=$(grep ".*-[$TIPOS]E\?-[^-]*$" $ARCHIVO_LOG)
-    mostrarLog "$CONTENIDO"
-    exit 0
+then	
+	for ((ARG=2; ARG < $# ; ARG++))
+	do
+		if [ "${!ARG}" = "I" -o "${!ARG}" = "A" -o "${!ARG}" = "SE" -o "${!ARG}" = "E" ]
+		then
+			if [ "${!ARG}" = "SE" ]
+			then
+				TIPOS="$TIPOS""S"
+			else 
+				TIPOS="$TIPOS""${!ARG}"
+			fi
+		else
+			echo "Tipo de Mensaje Invalido"
+			loguearC -s mirarC $ERR_TIPO_MSJ
+			exit $ERR_TIPO_MSJ
+		fi
+	done
+	CONTENIDO=$(grep ".*-[$TIPOS]E\?-[^-]*$" $ARCHIVO_LOG)
+	mostrarLog "$CONTENIDO"
+	exit 0
 fi
 
 # Mostrar las lineas del archivo de log que contengan al string pasado como parametro
 
 if [ $1 = "-s" ]
 then
-    if [ $# -ne 3 ] 
-    then
-        echo "Cantidad erronea de parametros"
-        loguearC -s mirarC $ERR_CANT_PARAM 3
-        exit $ERR_CANT_PARAM
-    fi
-    
-    CONTENIDO=$(grep -i "$2" $ARCHIVO_LOG)
-    mostrarLog "$CONTENIDO"
-    exit 0
+	if [ $# -ne 3 ] 
+	then
+		echo "Cantidad erronea de parametros"
+		loguearC -s mirarC $ERR_CANT_PARAM 3
+		exit $ERR_CANT_PARAM
+	fi
+	
+	CONTENIDO=$(grep -i "$2" $ARCHIVO_LOG)
+	mostrarLog "$CONTENIDO"
+	exit 0
 
 fi
 
@@ -187,9 +187,9 @@ fi
 
 if [ $# -ne 1 ]
 then
-    echo "Cantidad erronea de parametros"
-    loguearC -s mirarC $ERR_CANT_PARAM 2
-    exit $ERR_CANT_PARAM
+	echo "Cantidad erronea de parametros"
+	loguearC -s mirarC $ERR_CANT_PARAM 2
+	exit $ERR_CANT_PARAM
 fi
 
 CONTENIDO=$(cat $ARCHIVO_LOG)
