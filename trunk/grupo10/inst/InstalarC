@@ -1,5 +1,24 @@
 #!/bin/bash
 
+#Variables principales
+
+#GRUPO
+#DEFBINDIR
+#DEFARRIDIR
+#DEFDATASIZE
+#DEFLOGDIR
+#DEFLOGEXT
+#DEFLOGSIZE
+#MENSAJESI se van concatenando los comandos instalados con su informacion
+#MENSAJENO se van concatenando los comandos no instalados
+#RESPUESTA donde se almacena la ultima respuesta ingresada por teclado
+#INSTALADOS arreglo donde queda indicado para cada comando si el mismo esta instalado
+#		1 iniciarC
+#		2 detectarC
+#		3 sumarC
+#		4 listarC
+
+#********muestra por pantalla la información de ayuda del InstalarC
 mostrarAyuda() {
 	echo
 	echo "Realiza la instalacion del paquete Consultar, creando las estructuras de directorios y archivos, segun las especificaciones del usuario"
@@ -24,6 +43,7 @@ mostrarAyuda() {
 return 0
 }
 
+#*******Dada distintas respuesta posibles ingresada por el usuario y con un mismo significado, se las unifica para ser #*******tratadas de igual manera   
 function unificar_respuestas
 {	
 	AUXRESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")
@@ -40,6 +60,7 @@ function unificar_respuestas
 	fi
 } 
 
+#*******Se setean los parametros de configuración default desde el archivo InstalarC.conf
 function setParamFromConf
 {
 	getConfigParam "CURRDIR"
@@ -58,6 +79,7 @@ function setParamFromConf
 	DEFLOGSIZE=$CONFIGPARAM
 }
 
+#*******Se setean los parametros de configuración default con constantes default
 function setParamDefault
 {
 	DEFBINDIR="/bin"
@@ -71,11 +93,16 @@ function setParamDefault
 	GRUPO=$(echo $GRUPO | sed -n "s/\(.*\)\(\/inst\/.*\)/\1/p")
 }
 
+#*******Dada una expresion pasada por parametros se le escapea /, reemplazandola por \/
+#*******$1 es la expresion a escapear
 function escapear_param
 {
 	ESCAPEADO=$(echo -e "$1" | sed "s/\//\\\\\//g")
 }
 
+#*******Dada el nombre de una variable($1) y un nuevo valor($2),se cambia el valor existente de dicha variable en el #*******InstalarC.conf por el nuevo valor
+#*******$1 nombre de la variable a cambiar
+#*******$2 nuevo valor de la variable a cambiar
 function setear_conf_param
 {
 	escapear_param $2
@@ -83,8 +110,10 @@ function setear_conf_param
 	mv $GRUPO/temp/InstalarC.conf $GRUPO/conf/InstalarC.conf
 }
 
+#*******Se crea o actualiza el archivo de configuración InstalarC.conf, con los nuevos valores default
 function actualizar_archivo_configuracion
-{
+{	
+#*******Si el archivo de configuración InstalarC.conf existe, se setean todos los parametros con los nuevos valores, uno a #*******la vez
 	if [ -f "$GRUPO/conf/InstalarC.conf" ];then
 		setear_conf_param "BINDIR" "$DEFBINDIR"
 		setear_conf_param "ARRIDIR" "$DEFARRIDIR"
@@ -109,6 +138,7 @@ function actualizar_archivo_configuracion
 		setear_conf_param "LISTARU" "$OWNER"
 		setear_conf_param "LISTARF" "$FECHACREACION"
 	else	
+#*******Si el archivo de configuración InstalarC.conf no existe, se lo crea con los nuevos valores default
 		#echo -e "$GRUPO"
 		echo "$RESPUESTA" | grep "^\/[a-zA-Z0-9_][a-zA-Z0-9_]*\(\/[a-zA-Z0-9_][a-zA-Z0-9_]*\)*$"
 		echo -e "CURRDIR = $GRUPO" >> $GRUPO/conf/InstalarC.conf
@@ -142,10 +172,14 @@ function actualizar_archivo_configuracion
 	fi
 }
 
+#*******Instala el componente pasado por parametros
+#*******$1 nombre del comando a instalar
+#*******$2 indice del comando en INSTALADOS
 function instalar_componente
 {
+#********Verifica si el comando a Instalar no fue ya instalado, y solo instala si es necesario
 	AUX=${INSTALADOS[$2]}
-	if [ "$AUX" = "NO" ];then
+	if [ "$AUX" = "NO" ];then 
 		#echo -e "./$1"
 		if [ -f "$GRUPO/inst/$1" ];then
 			cp "$GRUPO/inst/$1" "$GRUPO$DEFBINDIR/$1" 
@@ -156,6 +190,7 @@ function instalar_componente
 	fi
 }
 
+#*******Crea los directorios segun las variables default, y copia los archivos de la carpeta inst a las carpetas #*******correspondientes
 function generar_directorios_archivos
 {	
 	#solo mostrar
@@ -172,6 +207,7 @@ function generar_directorios_archivos
 	mkdir -p $GRUPO/ya
 	mostrar_grabar "moviendo archivos...." I
 	cp "$GRUPO/inst/errores.mae" "$GRUPO/mae/errores.mae"
+	#********Previo a mover cualquier archivo desde inst se chequea su existencia, informando su ausencia de ser 		#*******necesario
 	if [ -f "$GRUPO/inst/encuestas.mae" ];then
 		cp "$GRUPO/inst/encuestas.mae" "$GRUPO/mae/encuestas.mae" 
 	else
@@ -193,16 +229,21 @@ function generar_directorios_archivos
 	instalar_componente "listarC" 4
 }
 
+#*******Se pide y se setea, segun lo ingresado por teclado, el nuevo tamaño maximo del archivo del log
 function configurar_logsize
 {
+#*******Se pide por pantalla que se setee el tamaño maximo de los archivos de log 
 	mostrar_grabar "Ingrese el tamaño maximo para los archivos $DEFLOGEXT (en Kbytes): $DEFLOGSIZE" I
 	#opciones aceptar,cancelar,volver y opcion nueva
 	read -e RESPUESTA
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
+	#*******Solo si la respuesta no es ni aceptar, ni cancelar, ni volver se setea el nuevo valor de tamaño
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
+		#*******se verifica que el valor ingresado por teclado sea un numero entero
 		VALIDACION=$(echo "$RESPUESTA" | grep "^[0-9][0-9]*$");		
 		if [ "$VALIDACION" != "" ];then
+			#********se cambia el valor default si el ingresado por teclado resulta valido
 			DEFLOGSIZE=$RESPUESTA
 		else
 			mostrar_grabar "error en la data ingresada, se esperaba un numero entero" I;		
@@ -211,16 +252,21 @@ function configurar_logsize
 	fi
 }
 
+#*******Se pide y se setea, segun lo ingresado por teclado, la nueva extension de los archivos de log
 function configurar_logext
 {
+#*******Se pide por pantalla que se setee la nueva extension para los archivos de log 
 	mostrar_grabar "Ingrese la extensión para los archivos de log: (.$DEFLOGEXT)" I
 	#opciones aceptar,cancelar,volver y opcion nueva
 	read -e RESPUESTA
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
+	#*******Solo si la respuesta no es ni aceptar, ni cancelar, ni volver se setea el nuevo valor de extension de log
 	if [[ "$RESPUESTA" != "a" && "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
+		#*******se verifica que el valor ingresado por teclado empiece con punto, y termine con caracter 			#*******alfa-numerico
 		VALIDACION=$(echo "$RESPUESTA" | grep "^\.[a-zA-Z0-9][a-zA-Z0-9]*\(\.[a-zA-Z0-9][a-zA-Z0-9]*\)*$");		
 		if [ "$VALIDACION" != "" ];then
+			#********se cambia el valor default si el ingresado por teclado resulta valido			
 			DEFLOGEXT=$(echo "$RESPUESTA" | sed -n "s/\.\(.*\)/\1/p")	
 			#DEFLOGEXT=$RESPUESTA
 		else
@@ -229,8 +275,7 @@ function configurar_logext
 		fi	
 	fi
 }
-
-
+#*******Se pide y se setea, segun lo ingresado por teclado, el nuevo directorio de los archivos de log
 function configurar_logdir
 {
 	mostrar_grabar "Ingrese el nombre del directorio de log: ($GRUPO$DEFLOGDIR)" I
@@ -249,8 +294,7 @@ function configurar_logdir
 		
 	fi
 }
-
-
+#*******Se pide y se setea, segun lo ingresado por teclado, el nuevo directorio de los archivos ejecutables
 function configurar_bindir
 {
 	mostrar_grabar "Ingrese el nombre del subdirectorio de ejecutables: ($GRUPO$DEFBINDIR)" I
@@ -270,14 +314,21 @@ function configurar_bindir
 	fi
 }
 
+#*******Verifica si el espacio libre en disco alcanza para el espacio necesitado en la variable $DEFDATASIZE
+#*******$DEFDATASIZE contiene el tamaño de espacio en disco que se quiere verificar si se dispone
+#*******$ESPACIOLIBRE se retorna el espacio total de disco del que se dispone en megas
+#*******$HAYESPACIOLIBRE retorna el valor de la verificacion. "Si", en caso de que exista espacio suficiente en disco, y #*******		"No" en caso contrario
 function chequear_espacio_disco
 {
+#*******Se obtiene el espacio disponible en disco y la unidad 
 	ESPACIOLIBRE=$(df -h | sed -n "s/\([^ ]*\)\([ ]*\)\([0-9GKMB,\.][0-9GKMB,\.]*\)\([ ]*\)\([0-9GKMB,\.][0-9GKMB,\.]*\)\([ ]*\)\([0-9,\.][0-9,\.]*\)\([GKMB]\)\(.*\)\/$/\7/p")
 	UNIDAD=$(df -h | sed -n "s/\([^ ]*\)\([ ]*\)\([0-9GKMB,\.][0-9GKMB,\.]*\)\([ ]*\)\([0-9GKMB,\.][0-9GKMB,\.]*\)\([ ]*\)\([0-9,\.][0-9,\.]*\)\([GKMB]\)\(.*\)\/$/\8/p")	
+	#*******Si hay una coma en el numero, se reemplaza la misma por punto, ya que bc soporta punto y no coma
 	HAYCOMA=$(echo "$ESPACIOLIBRE" | grep ".*,.*")
 	if [ "$HAYCOMA" != "" ];then
 		ESPACIOLIBRE=$(echo "$ESPACIOLIBRE" | sed -n "s/\(.*\)\(,\)\(.*\)/\1.\3/p")
 	fi
+	#*******Segun la unidad, se hace el pasaje del ESPACIOLIBRE a megas y se redondea para abajo
 	case "$UNIDAD" in
 		"G")
 			ESPACIOLIBRE=$(echo "($ESPACIOLIBRE*1024)/1" | bc)
@@ -292,13 +343,14 @@ function chequear_espacio_disco
 			ESPACIOLIBRE=$(echo "($ESPACIOLIBRE*1048576)/1" | bc)
 		;;
 	esac
+	#*******Se verifica si se dispone de suficiente espacio libre en el disco
 	HAYESPACIOLIBRE="SI"
 	if [ $ESPACIOLIBRE -le $DEFDATASIZE ];then
 		HAYESPACIOLIBRE="NO"
 	fi
 
 } 
-
+#*******Se pide y se setea, segun lo ingresado por teclado, el nuevo tamaño minimo que se debe disponer para datos externos
 function configurar_datasize
 {
 	mostrar_grabar "Ingrese el espacio mínimo requerido para datos externos(en Mbytes):" I
@@ -317,7 +369,7 @@ function configurar_datasize
 		fi
 	fi
 }
-
+#*******Se pide y se setea, segun lo ingresado por teclado, el nuevo directorio de los archivos de arribos
 function configurar_arridir
 {
 	mostrar_grabar "Ingrese el nombre del directorio que permite el arribo de archivos" I
@@ -338,9 +390,11 @@ function configurar_arridir
 	fi
 }
 
+#*******Se setean todos los parametros de configuración de instalación por parte del usuario
+#*******$RESPUESTA queda registrada la ultima respuesta ingresada por parte del usuario
+#*******
 function configurar_instalacion
 {
-	#falta log de las respuestas
 	configurar_arridir
 	if [[ "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then
 		HAYESPACIOLIBRE="NO"
@@ -368,32 +422,42 @@ function configurar_instalacion
 	if [[ "$RESPUESTA" != "c" && "$RESPUESTA" != "v" ]];then		
 		configurar_logsize
 	fi
+	#*******si se ingreso c de cancelar, se llama a la finalizacion del InstalarC
 	if [ "$RESPUESTA" = "c" ];then
 		fin "cancelar"
 	fi
+	#*******si se ingreso v de volver, se vuelve a invocar el configurar_instalacion para empezar nuevamente el seteo 		#*******de parametros, con los valores default modificados hasta el parametro donde se ingreso volver.
 	if [ "$RESPUESTA" = "v" ];then
 		configurar_instalacion
 	fi
 	
 }
 
+#*******Finaliza la ejecucion del comando InstalarC
 function fin
-{
+{	
+	#*******Si se paso como primer parametro "cancelar", muestra por pantalla y por log dicha cancelación
 	#cerrar el InstalarC.log
 	if [ "$#" = "1" ];then
 		if [ "$1" = "cancelar" ];then
 			mostrar_grabar "Proceso de instalación cancelado" I
 		fi
 	fi
+	#*******Se elimina la carpeta de archivos temporales y se corta la ejecución de InstalarC
 	rm -fr $GRUPO/temp
 	exit 0
 }
 
+#*******Muestra un mensaje por pantalla, y lo guarda en el log de InstalarC
 function mostrar_grabar
 {	
-	#si no se pasa $3, se muestra por pantalla y loguea. Si $3=G solo loguea, sino solo muestra por pantalla
-	#$2 tipo de mensaje
+	#Obligatorios
 	#$1 mensaje
+	#$2 tipo de mensaje
+	#Opcional
+	#$3 si se muestra o logea unicamente
+
+	#si no se pasa $3, se muestra por pantalla y se loguea. Si $3=G el mensaje solo se loguea, si viene con otro valor 		#distinto, solo se muestra por pantalla
 	if [ "$#" = 3 ];then
 		if [ "$3" = "G" ];then
 			"$LIBDIR"/loguearC "InstalarC" "$2" "$1"
@@ -406,8 +470,10 @@ function mostrar_grabar
 	fi
 }
 
+#*******Instala solo los componentes faltantes, y segun los parametros de instalacion del InstalarC.conf existente
 function instalacion_parcial
 {
+	#*******Se pregunta si se acepta la instalacion parcial, y se muestran los parametros de instalacion existentes
 	mostrar_grabar "Se propone la instalación de los componentes faltantes, con las variables de instalación" I
 	mostrar_grabar "siguientes, predefinidas en el archivo de configuración : " I
 	AUXCAT=$(cat "$GRUPO/conf/InstalarC.conf")
@@ -417,19 +483,23 @@ function instalacion_parcial
 	mostrar_grabar "$RESPUESTA" I G
 	RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
 	if [ "$RESPUESTA" = "SI" ];then
+		#*******levanta los parametros de instalacion de InstalarC.conf, y crea los ejecutables faltantes
 		setParamFromConf
 		generar_directorios_archivos
 		actualizar_archivo_configuracion
+		#*******se verifica nuevamente la instalacion, para generar los mensajes de componentes instalados y no 		#*******instalados, y se imprime el mensaje final de como termino la instalacion parcial		
 		verificar_instalacion
 		print_instalacion_parcial
 		mostrar_grabar "* FIN del proceso de Instalación Copyright SisOp (c)2011	*" I
 		mostrar_grabar "*****************************************************************" I
 	else
+		#*******se da la opcion de iniciar una instalacion completa de cero en caso de no querer la parcial
 		mostrar_grabar "¿desea iniciar una instalación completa nueva?(Si/No)" I
 		read -e RESPUESTA	
 		mostrar_grabar "$RESPUESTA" I G
 		RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
 		if [ "$RESPUESTA" = "SI" ];then
+			#*******se setean todos los componentes como no instalados, y se setean los parametros de 				#*******instalacion default, ignorando el InstalarC.conf existente
 			INSTALADOS[1]="NO"
 			INSTALADOS[2]="NO"
 			INSTALADOS[3]="NO"
@@ -437,11 +507,13 @@ function instalacion_parcial
 			setParamDefault
 			instalacion_completa
 		else
+			#*******en caso de no querer instalacion parcial o completa se cancela la ejecución
 			fin "cancelar"
 		fi	
 	fi
 }
 
+#*******Instala todos los componentes, previo seteo de los parametros de configuracion por parte del usuario 
 function instalacion_completa
 {		
 	mostrar_grabar '********************************************************' I
@@ -457,23 +529,28 @@ function instalacion_completa
 	mostrar_grabar "$RESPUESTA" I G
 	unificar_respuestas
 	if [ "$RESPUESTA" = "a" ];then	
+		#*******Chequea si se posee una version 5 o superior de Perl, y se abandona la instalacion de no tenerse 
 		PERL=$(perl --version | sed -n "s/\(.*v\)\([5-9]\.[0-9.]*\)\(.*\)/\2/p")	
 		if [ "$PERL" = "" ];then
 			mostrar_grabar "Para instalar Consultar es necesario contar con Perl 5 o superior" I
 			mostrar_grabar "intalado. Efectúe su instalación e inténtelo nuevamente. Proceso de" I
 			mostrar_grabar "Instalación Cancelado" I
 		else
+			#*******se informa la version de perl que se posee y se brinda informacion sobre donde se va hacer 				#*******la instalación y sobre la misma en general
 			mostrar_grabar "La version de perl instalada en el sistema es v$PERL" I
 			mostrar_grabar "Todos los directorios del sistema serán subdirectorios de $GRUPO" I
 			mostrar_grabar "Todos los componentes de la instalación se obtendrán del repositorio:" I
 			mostrar_grabar "$GRUPO/inst" I
+			#*******se listan los archivos existentes en la carpeta inst por pantalla
 			AUXLISTADO=$(ls "$GRUPO/inst")			
 			mostrar_grabar "$AUXLISTADO" I
 			mostrar_grabar "El log de la instalacion se almacenara en $GRUPO/inst" I
 			mostrar_grabar "Al finalizar la instalación, si la misma fue exitosa se dejara un" I
  			mostrar_grabar "archivo de configuración en $GRUPO/conf" I
 			while [ "1" = "1" ]; do
+				#*******empieza la etapa de seteo de parametros de instalación por parte del usuario
 				configurar_instalacion
+				#*******si se llega a esta instancia es porque no hubo cancelacion en la etapa de 					#*******configuración, por lo que se salio de la misma exitosamente, y se muestra los 					#*******valores seteados que se van a guardar en InstalarC.conf
 				clear
 				mostrar_grabar  "****************************************************************" I
 				mostrar_grabar  "*" I
@@ -494,25 +571,30 @@ function instalacion_completa
 				mostrar_grabar  "Log de la instalación: $GRUPO/inst" I
 				mostrar_grabar  "Si los datos ingresados son correctos de ENTER para continuar, si" I
 				mostrar_grabar	"desea modificar algún parámetro oprima cualquier tecla para reiniciar" I
-				#si toca cualquier tecla que no sea tab,enter o space
+				#*******se lee un caracter ingresado por teclado, y si el mismo es '', se presiono enter.
 				read -d '' -sn1 RESPUESTA
 				if [ "$RESPUESTA" = "" ];then
+					#*******el usuario acepta los valores seteados, y continua la instalación
 					mostrar_grabar "se presiono enter" I G
 					break
 				else
+					#*******el usuario desea modificar algun valor, por lo que se vuelve al comienzo 						#*******del while, para empezar nuevamente el seteo de parametros
 					mostrar_grabar "$RESPUESTA" I G					
 					clear
 				fi
 			done
-			mostrar_grabar "Iniciando Instalación... Está UD. seguro? (Si/No)" I			
+			mostrar_grabar "Iniciando Instalación... Está UD. seguro? (Si/No)" I	
+			#*******Se pide confirmación de instalación, cancelando la misma en caso negativo		
 			read -e RESPUESTA	
 			mostrar_grabar "$RESPUESTA" I G
 			RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
 			if [ "$RESPUESTA" != "SI" ];then
 				fin "cancelar"
 			fi
+			#*******se generan los directorios y archivos segun los parametros seteados y se actualiza el 				#*******archivo de configuracion InstalarC.conf
 			generar_directorios_archivos
 			actualizar_archivo_configuracion
+			#*******se verifica la instalación para generar nuevamente los mensajes de componentes instalados 				#*******y faltantes, y se imprime el mensaje final de como termino la instalación 
 			verificar_instalacion
 			print_instalacion_parcial
 			mostrar_grabar "* FIN del proceso de Instalación Copyright SisOp (c)2011	*" I
@@ -523,6 +605,7 @@ function instalacion_completa
 	fi
 }
 
+#*******Imprime por pantalla que hay una instalación completa
 function print_instalacion_completa
 {
 	mostrar_grabar '********************************************************' I
@@ -534,6 +617,7 @@ function print_instalacion_completa
 	mostrar_grabar 'Proceso de instalacion cancelado' I
 }
 
+#*******Imprime por pantalla, que componentes hay instalados y cuales faltan por instalar
 function print_instalacion_parcial
 {
 	mostrar_grabar '********************************************************' I
@@ -546,9 +630,13 @@ function print_instalacion_parcial
 	mostrar_grabar '********************************************************' I
 }
 
+#*******Verifica si un determinado comando ya esta instalado.
 function comando_instalado
 {
-	
+#*******$1 path del comando cuya existencia hay que verificar
+#*******$2 nombre del comando
+#*******$3 indice del comando en el arreglo de Instalados
+#*******INSTALACION se asigna el estado de la instalación, completa, parcial o ninguna
 	if [ -f $1 ];then
 		OWNER=$(stat -c %U "$1")
 		FECHACREACION=$(date -r $1 "+%d/%m/%Y %k:%M:%S")
@@ -560,8 +648,10 @@ function comando_instalado
 		MENSAJENO="$MENSAJENO\n*$2"
 	fi 
 }
+
+#*******verifica si el paquete Consulta se encuentra instalado y en que forma se encuentra instalado, retornando dicha #*******informacion a traves de las variables INSTALACION e INSTALADOS
 function verificar_instalacion
-{
+{ 
 #1iniciarC
 #2detectarC
 #3sumarC
@@ -571,11 +661,12 @@ INSTALADOS[1]="NO"
 INSTALADOS[2]="NO"
 INSTALADOS[3]="NO"
 INSTALADOS[4]="NO"
+#*******se verifica que exista el archivo de configuración InstalarC.conf, obligatorio si hubo una instalación previa
 if [ -f $FILE ];then
 	INSTALACION="completa"
 	MENSAJESI=""
 	MENSAJENO=""
-	#se verifica esten instalados los comandos en bin
+	#se verifica que esten instalados los comandos en el bindir obtenido de InstalarC.conf
 	getConfigParam "BINDIR"
 	PATHAUX="$GRUPO$CONFIGPARAM/iniciarC"
 	comando_instalado $PATHAUX "iniciarC" 1
@@ -628,7 +719,7 @@ fi
 
 #*******fin preparativos para uso del loguear
 
-#*******se evalúan parametros
+#*******se evalúan si los parametros que llegan, lo hacen de manera valida
 if [ $# -gt 1 ]
 then
     mostrar_grabar "Cantidad erronea de parametros, se requieren a lo sumo 1" ES
@@ -652,9 +743,10 @@ if [ $# -eq 1 ];then
 	mostrar_grabar "el parametro ingresado es erroneo, ejecute InstalarC --help para obtener ayuda" ES
 	fin "cancelar"	
 fi 
-#*******como no hubo parametro alguno, arranca la ejecucion del InstalarC propiamente dicha
+#*******en caso de no haber parametro alguno, arranca la ejecucion del InstalarC propiamente dicha
 DATE=$(date "+%d/%m/%Y %k:%M:%S")
 mostrar_grabar "$DATE-$USERNAME-instalarC-I-Inicio de ejecucion" I G
+#*******se verifica si esta instalado el paquete consulta, para determinar si es necesario instalar, y en que forma, si #*******total o parcial
 verificar_instalacion
 case "$INSTALACION" in
 	"completa")
