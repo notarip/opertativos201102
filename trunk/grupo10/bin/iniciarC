@@ -249,7 +249,7 @@ function definir_variables
 	export CURRDIR="$PROPIEDAD"
 
 	recupera_propiedad "ARRIDIR"	
-	export ARRIDIR="$GRUPO/$PROPIEDAD"
+	export ARRIDIR="$GRUPO$PROPIEDAD"
 
 	#recupera_propiedad "PREPADIR"	
 	export PREPADIR="$GRUPO/preparados"
@@ -258,7 +258,7 @@ function definir_variables
 	export RECHADIR="$GRUPO/rechazados"
 
 	recupera_propiedad "BINDIR"
-	export BINDIR="$GRUPO/$PROPIEDAD"
+	export BINDIR="$GRUPO$PROPIEDAD"
 
 	recupera_propiedad "DATAMAE"
 	export DATAMAE="$PROPIEDAD"
