@@ -14,13 +14,7 @@ ERR_TIPO_MSJ=3
 ERR_PARAM_NO_NUM=1
 ERR_CANT_PARAM=2
 
-#LOGEXT="log" #VIENE DE AFUERA
-#PATH=${PATH}:$PWD #VIENE DE AFUERA
-#LOGDIR=$PWD/logs # directorio del log file (vendria de afuera)
-
 # MOSTRARLOG: Realiza el formateo de las lineas del log que pasaron por el filtro #
-
-#ADVERTENCIA: No estoy seguro que el codigo sea portable por el tema de los colores, a lo sumo se reescribe el formateo y listo
 
 mostrarLog() {
 
@@ -99,6 +93,8 @@ then
 	mostrarAyuda
 	exit 0
 fi
+
+#Mostrar version
 
 if [ "$1" = "-v" -o "$1" = "--version" ]
 then
