@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #LAS VARIABLES PARA LA ESCRITURA EN EL LOG FILE SON:
-#	DESCRIPCION -- why
-#	FECHA -- when
-#	TIPO -- what
-#	USUARIO -- who
-#	NOMBRE_COMANDO -- where
+#    DESCRIPCION -- why
+#    FECHA -- when
+#    TIPO -- what
+#    USUARIO -- who
+#    NOMBRE_COMANDO -- where
 #
 
 #Codigos de Errores
@@ -15,44 +15,39 @@ ERR_CANT_PARAM=2
 
 #Variables principales
 
-#PATH=${PATH}:$PWD 					#VIENE DE AFUERA
-#DATAMAE=$PWD						#VIENE DE AFUERA
-#LOGSIZE=409600						# tamanio maximo del log (viene de afuera)
-#LOGEXT=log						# extension del archivo de log (vendria de afuera)
-#LOGDIR=$PWD/logs					# directorio del log file (vendria de afuera)
 ARCH_ERRORES="$DATAMAE/errores.mae"
 
 mostrarAyuda() {
-	echo
-	echo "Graba mensajes en un archivo de log"
-	echo
-	echo "MODO DE USO: loguearC [OPCION] comando [PARAMETROS]"
-	echo
-	echo "OPCIONES:"
-	echo "-s		Error Estandarizado"
-	echo "-h, --help	Muestra esta pantalla"
-	echo "-v, --version	Informa acerca de la version"
-	echo
-	echo "EJEMPLOS:"
-	echo
-	echo "Error Estandarizado"
-	echo
-	echo "loguearC -s <comando> <codigo> <parametro>"
-	echo
-	echo "loguearC -s unComando 4"
-	echo '	Logueo en el log de unComando el mensaje de codigo 4 ("archivo no existente")'
-	echo
-	echo "loguearC -s unComando 4 unArchivo"
-	echo '	Logueo en el log de unComando el mensaje de codigo 4 ("archivo no existente") indicando que el archivo que falta es "unArchivo"'
-	echo 
-	echo "Error No Estandarizado"
-	echo
-	echo "loguearC <comando> <tipo msj(A,E,I,SE)> <descripcion>"
-	echo 
-	echo "loguearC E unComando miDesc"
-	echo '	Logueo en el log de unComando mi propio msj indicando el tipo (E) y la descripcion (miDesc)'
-	echo
-return 0
+    echo
+    echo "Graba mensajes en un archivo de log"
+    echo
+    echo "MODO DE USO: loguearC [OPCION] comando [PARAMETROS]"
+    echo
+    echo "OPCIONES:"
+    echo "-s        Error Estandarizado"
+    echo "-h, --help    Muestra esta pantalla"
+    echo "-v, --version    Informa acerca de la version"
+    echo
+    echo "EJEMPLOS:"
+    echo
+    echo "Error Estandarizado"
+    echo
+    echo "loguearC -s <comando> <codigo> <parametro>"
+    echo
+    echo "loguearC -s unComando 4"
+    echo '    Logueo en el log de unComando el mensaje de codigo 4 ("archivo no existente")'
+    echo
+    echo "loguearC -s unComando 4 unArchivo"
+    echo '    Logueo en el log de unComando el mensaje de codigo 4 ("archivo no existente") indicando que el archivo que falta es "unArchivo"'
+    echo 
+    echo "Error No Estandarizado"
+    echo
+    echo "loguearC <comando> <tipo msj(A,E,I,SE)> <descripcion>"
+    echo 
+    echo "loguearC E unComando miDesc"
+    echo '    Logueo en el log de unComando mi propio msj indicando el tipo (E) y la descripcion (miDesc)'
+    echo
+    return 0
 }
 
 
@@ -62,83 +57,74 @@ return 0
 
 if [ $# -eq 0 ]
 then
-	#echo "Cantidad erronea de parametros"
-	loguearC -s $ERR_CANT_PARAM "al menos 3"
-	exit $ERR_CANT_PARAM
+    loguearC -s $ERR_CANT_PARAM "al menos 3"
+    exit $ERR_CANT_PARAM
 fi
 
 if [ $1 = '--help' -o $1 = "-h" ]
 then
-	mostrarAyuda	
-	exit 0
+    mostrarAyuda    
+    exit 0
 fi
 
 if [ $1 = "--version" -o $1 = "-v" ]
 then
-	echo
-	echo "loguearC v 1.0"
-	echo "Escrito por Rodolfo Cruz y Martin Ciruzzi"
-	echo
-	exit 0
+    echo
+    echo "loguearC v 1.0"
+    echo "Escrito por Rodolfo Cruz y Martin Ciruzzi"
+    echo
+    exit 0
 fi
 
 if [ $1 = '-s' ]
 then 
-	if [ $# -ne 4 -a $# -ne 3 ] 
-	then
-		#echo "Cantidad erronea de parametros"
-		# logueo el error 
-		loguearC -s loguearC $ERR_CANT_PARAM "al menos 3"
-		exit $ERR_CANT_PARAM
-	fi
-	
-	# comprobacion de un codigo numerico
-	expr "$3" + 1 &> /dev/null
-	if [ $? -ne 0 ]
-	then
-		#echo "Codigo no numerico"
-		# logueo el error
-		loguearC -s loguearC $ERR_PARAM_NO_NUM
-		exit $ERR_PARAM_NO_NUM
-	fi	
+    if [ $# -ne 4 -a $# -ne 3 ] 
+    then
+        # logueo el error 
+        loguearC -s loguearC $ERR_CANT_PARAM "al menos 3"
+        exit $ERR_CANT_PARAM
+    fi
+    
+    # comprobacion de un codigo numerico
+    expr "$3" + 1 &> /dev/null
+    if [ $? -ne 0 ]
+    then
+        # logueo el error
+        loguearC -s loguearC $ERR_PARAM_NO_NUM
+        exit $ERR_PARAM_NO_NUM
+    fi    
 
 else 
-	if [ ! $# = 3 ] 
-	then
-		#echo "Cantidad erronea de parametros"
-		# logueo el error 
-		loguearC -s loguearC $ERR_CANT_PARAM 3
-		exit $ERR_CANT_PARAM
-	fi
+    if [ ! $# = 3 ] 
+    then
+        # logueo el error 
+        loguearC -s loguearC $ERR_CANT_PARAM 3
+        exit $ERR_CANT_PARAM
+    fi
 fi
 
 # vemos en que log se debe grabar (WHERE?)
 # vemos con que descripcion se escribe el log(WHY?)
 # vemos el tipo(WHAT?) de log que es
 
-if [ $1 = '-s' ]			# es un error estandarizado
+if [ $1 = '-s' ]            # es un error estandarizado
 then
-	#echo "Error estandarizado"
-	NOMBRE_COMANDO=$(echo $2 | tr [:upper:] [:lower:])
-	TIPO_MSJ=$(sed -n "s/^$3;\([^;]*\);[^;]*/\1/p" $ARCH_ERRORES)
-	DESCRIPCION=$(sed -n "s/^$3;[^;]*;\([^;]*\)/\1/p" $ARCH_ERRORES)
-	DESCRIPCION=${DESCRIPCION//@/$4} # reemplazo las @ en el msj de error estandarizado por el parametro que se pasa
-	
-else					# es un error no estandarizado
+    NOMBRE_COMANDO=$(echo $2 | tr [:upper:] [:lower:])
+    TIPO_MSJ=$(sed -n "s/^$3;\([^;]*\);[^;]*/\1/p" $ARCH_ERRORES)
+    DESCRIPCION=$(sed -n "s/^$3;[^;]*;\([^;]*\)/\1/p" $ARCH_ERRORES)
+    DESCRIPCION=${DESCRIPCION//@/$4} # reemplazo las @ en el msj de error estandarizado por el parametro que se pasa
+    
+else                    # es un error no estandarizado
 
-	#echo "Error no estandarizado"
-	NOMBRE_COMANDO=$(echo $1 | tr [:upper:] [:lower:])	
-	TIPO_MSJ=$2	
-	DESCRIPCION=$(echo "$3" | tr -s [:space:])
-	if [ ! $TIPO_MSJ = E -a ! $TIPO_MSJ = I -a ! $TIPO_MSJ = A -a ! $TIPO_MSJ = SE ]
-	then
-		loguearC -s loguearC $ERR_TIPO_MSJ
-		exit $ERR_TIPO_MSJ
-	fi
+    NOMBRE_COMANDO=$(echo $1 | tr [:upper:] [:lower:])    
+    TIPO_MSJ=$2    
+    DESCRIPCION=$(echo "$3" | tr -s [:space:])
+    if [ ! $TIPO_MSJ = E -a ! $TIPO_MSJ = I -a ! $TIPO_MSJ = A -a ! $TIPO_MSJ = SE ]
+    then
+        loguearC -s loguearC $ERR_TIPO_MSJ
+        exit $ERR_TIPO_MSJ
+    fi
 fi
-
-#echo "EL Tipo de msj es: $TIPO_MSJ"
-#echo "La descripcion que lo acompanara es: $DESCRIPCION"
 
 # vemos el usuario (WHO?)
 
@@ -152,12 +138,10 @@ FECHA=$(date "+%Y%m%d %H:%M:%S")
 
 if [ ! -d $LOGDIR ]
 then
-	mkdir -p $LOGDIR
+    mkdir -p $LOGDIR
 fi
 
-ARCH_ESCRITURA="$LOGDIR/$NOMBRE_COMANDO.$LOGEXT"	# ruta del archivo de log
-
-#echo "El log se escribira en: $ARCH_ESCRITURA"		# sacamos la ruta para comprobacion
+ARCH_ESCRITURA="$LOGDIR/$NOMBRE_COMANDO.$LOGEXT"    # ruta del archivo de log
 
 # escribimos el log propiamente dicho
 
@@ -166,21 +150,17 @@ echo $FECHA-$USUARIO-$NOMBRE_COMANDO-$TIPO_MSJ-"$DESCRIPCION" >>$ARCH_ESCRITURA
 # verificamos que el log no haya excedido la capacidad maxima
 
 TAMANIO_LOG=$(wc -c < $ARCH_ESCRITURA)
-#echo "El Tamanio del log es: $TAMANIO_LOG"
 
 if [ $TAMANIO_LOG -ge $LOGSIZE ]
 then
-	
-	#echo "Tamanio Excedido"
-	FECHA=$(date "+%Y%m%d %H:%M:%S")
-	#Logueo el msj de Log Excedido en el log del padre
-	echo $FECHA-$USUARIO-$NOMBRE_COMANDO-A-Log Excedido >>$ARCH_ESCRITURA
-	NUM_LINES=$(wc -l < $ARCH_ESCRITURA)
-	#echo "El Archivo tiene ahora $NUM_LINES lineas"
-	NUM_LINES=$(expr $NUM_LINES / 2)
-	#echo "Quedaran $NUM_LINES lineas"
-	CONTENIDO_A_GUARDAR=$(tail -n $NUM_LINES $ARCH_ESCRITURA)
-	echo "$CONTENIDO_A_GUARDAR" > $ARCH_ESCRITURA
+    
+    FECHA=$(date "+%Y%m%d %H:%M:%S")
+    #Logueo el msj de Log Excedido
+    echo $FECHA-$USUARIO-$NOMBRE_COMANDO-A-Log Excedido >>$ARCH_ESCRITURA
+    NUM_LINES=$(wc -l < $ARCH_ESCRITURA)
+    NUM_LINES=$(expr $NUM_LINES / 2) # Me quedo con la ultima mitad de las lineas
+    CONTENIDO_A_GUARDAR=$(tail -n $NUM_LINES $ARCH_ESCRITURA)
+    echo "$CONTENIDO_A_GUARDAR" > $ARCH_ESCRITURA
 fi
 
 exit 0
