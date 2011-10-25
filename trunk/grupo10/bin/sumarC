@@ -9,14 +9,14 @@ ERR_OPCION_INVALIDA=16
 ERR_ENTORNO_NO_INICIALIZADO=11
 
 #Variables
-#GRUPO=$PWD    #vendria de afuera
+
 DIR_ENCUESTAS_PREPARADAS=$GRUPO/preparados
 DIR_ENCUESTAS_LISTAS=$GRUPO/listos
 DIR_ENCUESTAS_RECHAZADAS=$GRUPO/rechazados
 DIR_ENCUESTAS_NO_LISTAS=$GRUPO/nolistos
 DIR_ENCUESTAS_YA=$GRUPO/ya
 DIR_MAESTROS=$GRUPO/mae
-#PATH=${PATH}:$PWD
+
 ARCHIVO_NO_LISTOS="$DIR_ENCUESTAS_NO_LISTAS"/encuestas.rech
 ARCHIVO_YA="$DIR_ENCUESTAS_YA"/encuestas.sum
 ARCHIVO_MAESTRO_ENCUESTAS="$DIR_MAESTROS"/encuestas.mae
@@ -24,242 +24,239 @@ ARCHIVO_MAESTRO_PREGUNTAS="$DIR_MAESTROS"/preguntas.mae
 
 
 analizarBloque() {
-    echo
-    cabecera=$(echo "$1" | grep "^C,.*")
-    detalle=$(echo "$1" | grep "^D,.*")
-    puntaje=0
+	cabecera=$(echo "$1" | grep "^C,.*")
+	detalle=$(echo "$1" | grep "^D,.*")
+	puntaje=0
 
-    ############################################################## VERIFICAR NRO DE PREGUNTAS
-        
-    codigo_Encuesta=$(echo $cabecera | sed -n "1 s/^C,[^,]*,\([^,]*\),.*/\1/p" )
-    echo "CODIGO DE ENCUESTA" "$codigo_Encuesta"
-    
-    cant_Preguntas=$(sed -n "s/^$codigo_Encuesta,[^,]*,\([^,]*\),.*/\1/p" $ARCHIVO_MAESTRO_ENCUESTAS);    
-    echo "CANT PREGUNTAS" "$cant_Preguntas"
+	############################################################## VERIFICAR NRO DE PREGUNTAS
+		
+	codigo_Encuesta=$(echo $cabecera | sed -n "1 s/^C,[^,]*,\([^,]*\),.*/\1/p" )
+	
+	cant_Preguntas=$(sed -n "s/^$codigo_Encuesta,[^,]*,\([^,]*\),.*/\1/p" $ARCHIVO_MAESTRO_ENCUESTAS);	
 
-    cant_Registros_Detalle=$( echo "$detalle" | wc -l )
-    echo "CANT REGISTROS DETALLE" "$cant_Registros_Detalle"
+	cant_Registros_Detalle=$(echo "$detalle" | wc -l )
 
-    nro_Campos_OK=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*/$cabecera/p")
-    nro_Encuesta=$(echo "$cabecera" | sed -n "s/^C,\([^,]*\),.*/\1/p")    
-    codigo_Encuesta=$(echo "$cabecera" | sed -n "s/^C,[^,]*,\([^,]*\),.*/\1/p")    
-    duracion=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-    sitio=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-    codigo_Cliente=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-    persona_Relevada=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-    modalidad=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-    campania=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-    observaciones=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	nro_Campos_OK=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*/$cabecera/p")
+	nro_Encuesta=$(echo "$cabecera" | sed -n "s/^C,\([^,]*\),.*/\1/p")	
+	codigo_Encuesta=$(echo "$cabecera" | sed -n "s/^C,[^,]*,\([^,]*\),.*/\1/p")	
+	duracion=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	sitio=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	codigo_Cliente=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	persona_Relevada=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	modalidad=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	campania=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+	observaciones=$(echo "$cabecera" | sed -n "s/^C,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
 
-    if [ $cant_Registros_Detalle -lt $cant_Preguntas ]
-    then     
-        echo "faltan preguntas"
-        #rechazo bloque faltan preguntas
-        loguearC sumarC A "Bloque rechazado, falta de registro de detalle - Nro.encuesta: $nro_Encuesta"
-        echo "falta de registro de detalle,""$1" >> $ARCHIVO_NO_LISTOS
-        return 1
-    fi    
+	if [ "$cant_Registros_Detalle" -lt "$cant_Preguntas" ] 2>/dev/null
+	then 	
+		#rechazo bloque faltan preguntas
+		loguearC sumarC A "Bloque rechazado, falta de registro de detalle - Nro.encuesta: $nro_Encuesta"
+		echo "falta de registro de detalle,""$1" >> $ARCHIVO_NO_LISTOS
+		return 1
+	fi	
 
-    if [ $cant_Registros_Detalle -gt $cant_Preguntas ]
-    then     
-        echo "sobran preguntas"
-        #rechazo bloque sobran preguntas
-        loguearC sumarC A "Bloque rechazado, exceso de registro de detalle - Nro.encuesta: $nro_Encuesta"
-        echo "exceso de registro de detalle,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-    fi    
+	if [ "$cant_Registros_Detalle" -gt "$cant_Preguntas" ] 2>/dev/null
+	then 	
+		#rechazo bloque sobran preguntas
+		loguearC sumarC A "Bloque rechazado, exceso de registro de detalle - Nro.encuesta: $nro_Encuesta"
+		echo "exceso de registro de detalle,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+	fi	
 
-    ############################################################## VALIDACIONES REGISTRO CABECERA
+	############################################################## VALIDACIONES REGISTRO CABECERA
 
-    #verificacion cantidad de campos
-    if [ -z "$nro_Campos_OK" ]
-    then
-        echo "cantidad de campos incorrecto en cabecera"
-        #rechazo bloque por cabecera con nro campos incorrecto
-        loguearC sumarC A "Bloque rechazado, registro cabecera con nro campos incorrecto - Nro.encuesta: $nro_Encuesta"
-        echo "Numero de campos en cabecera incorrecto,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-        
-    fi
-    nro_Campos_OK=""
+	#verificacion cantidad de campos
+	if [ -z "$nro_Campos_OK" ]
+	then
+		#rechazo bloque por cabecera con nro campos incorrecto
+		loguearC sumarC A "Bloque rechazado, registro cabecera con nro campos incorrecto - Nro.encuesta: $nro_Encuesta"
+		echo "Numero de campos en cabecera incorrecto,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+		
+	fi
+	nro_Campos_OK=""
 
-    #verificacion de campos obligatorios
-    if [ -z "$nro_Encuesta" -o -z "$codigo_Encuesta" -o -z "$sitio" -o -z "$codigo_Cliente" -o -z "$persona_Relevada" -o -z "$modalidad" -o -z "$campania" ]
-    then
-        echo "Faltan CAMPOS OBLIGATORIOS cabecera papa"
-        #rechazo bloque por falta de campos obligatorios en cabecera
-        loguearC sumarC A "Bloque rechazado, falta de campos obligatorios en cabecera - Nro.encuesta: $nro_Encuesta"
-        echo "Falta de campos obligatorios en cabecera,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-    fi
-    
-    
-    ############################################################## VALIDACION DE LOS CAMPOS CABECERA
+	#verificacion de campos obligatorios
+	if [ -z "$nro_Encuesta" -o -z "$codigo_Encuesta" -o -z "$sitio" -o -z "$codigo_Cliente" -o -z "$persona_Relevada" -o -z "$modalidad" -o -z "$campania" ]
+	then
+		#rechazo bloque por falta de campos obligatorios en cabecera
+		loguearC sumarC A "Bloque rechazado, falta de campos obligatorios en cabecera - Nro.encuesta: $nro_Encuesta"
+		echo "Falta de campos obligatorios en cabecera,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+	fi
+	
+	
+	############################################################## VALIDACION DE LOS CAMPOS CABECERA
 
-    ## validacion de codigo encuesta
-    encuesta_Existe=$(grep "$codigo_Encuesta" < "$ARCHIVO_MAESTRO_ENCUESTAS")
-    if [ -z "$encuesta_Existe" ]
-    then 
-        echo "La encuesta no existe en el maestro de encuestas"
-        #rechazo bloque por no encontrar encuesta en el maestro
-        loguearC sumarC A "Bloque rechazado, no existe la encuesta $codigo_Encuesta - Nro.encuesta: $nro_Encuesta"
-        echo "No existe la encuesta $codigo_Encuesta,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-    fi
+	## validacion de codigo encuesta
+	encuesta_Existe=$(grep "$codigo_Encuesta" < "$ARCHIVO_MAESTRO_ENCUESTAS")
+	if [ -z "$encuesta_Existe" ]
+	then 
+		#rechazo bloque por no encontrar encuesta en el maestro
+		loguearC sumarC A "Bloque rechazado, no existe la encuesta $codigo_Encuesta - Nro.encuesta: $nro_Encuesta"
+		echo "No existe la encuesta $codigo_Encuesta,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+	fi
 
-    ## validacion de modalidad
-    if [ ! "$modalidad" = "E" -a ! "$modalidad" = "T" -a ! "$modalidad" = "P" -a ! "$modalidad" = "C" ]
-    then
-        echo "La modalidad no es ninguno de los tipos admitidos"
-        #rechazo bloque por error en la modalidad
-        loguearC sumarC A "Bloque rechazado, error en la modalidad - Nro.encuesta: $nro_Encuesta"
-        echo "Error en valor del campo modalidad,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-    fi
+	## validacion de modalidad
+	if [ ! "$modalidad" = "E" -a ! "$modalidad" = "T" -a ! "$modalidad" = "P" -a ! "$modalidad" = "C" ]
+	then
+		#rechazo bloque por error en la modalidad
+		loguearC sumarC A "Bloque rechazado, error en la modalidad - Nro.encuesta: $nro_Encuesta"
+		echo "Error en valor del campo modalidad,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+	fi
 
-    ## validacion de sitio
-    if [ ! "$sitio" = "P" -a ! "$sitio" = "L" -a ! "$sitio" = "E" -a ! "$sitio" = "S" -a  ! "$sitio" = "O" ]
-    then
-        echo "El sitio no es ninguno de los tipos admitidos"
-        #rechazo bloque por error en el sitio
-        loguearC sumarC A "Bloque rechazado, error en el sitio - Nro.encuesta: $nro_Encuesta"
-        echo "Error en valor del campo sitio,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-    fi
+	## validacion de sitio
+	if [ ! "$sitio" = "P" -a ! "$sitio" = "L" -a ! "$sitio" = "E" -a ! "$sitio" = "S" -a  ! "$sitio" = "O" ]
+	then
+		#rechazo bloque por error en el sitio
+		loguearC sumarC A "Bloque rechazado, error en el sitio - Nro.encuesta: $nro_Encuesta"
+		echo "Error en valor del campo sitio,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+	fi
 
 
-    ## validacion de persona relevada
-    if [ ! "$persona_Relevada" = "ID" -a ! "$persona_Relevada" = "II" -a ! "$persona_Relevada" = "RP" -a ! "$persona_Relevada" = "RC" ]
-    then
-        echo "La persona no es ninguno de los tipos admitidos"
-        #rechazo bloque por error en la persona
-        loguearC sumarC A "Bloque rechazado,error en la persona - Nro.encuesta: $nro_Encuesta"
-        echo "Error en el valor del campo persona,""$1">> $ARCHIVO_NO_LISTOS
-        return 1
-    fi
+	## validacion de persona relevada
+	if [ ! "$persona_Relevada" = "ID" -a ! "$persona_Relevada" = "II" -a ! "$persona_Relevada" = "RP" -a ! "$persona_Relevada" = "RC" ]
+	then
+		#rechazo bloque por error en la persona
+		loguearC sumarC A "Bloque rechazado,error en la persona - Nro.encuesta: $nro_Encuesta"
+		echo "Error en el valor del campo persona,""$1">> $ARCHIVO_NO_LISTOS
+		return 1
+	fi
 
-    ############################################################## VERIFICACIONES REGISTROS DE DETALLE
-    
-    for unDetalle in $detalle 
-    do 
+	############################################################## VERIFICACIONES REGISTROS DE DETALLE
+	
+	for unDetalle in $detalle 
+	do 
 
-        nro_Campos_OK=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,[^,]*,[^,]*,[^,]*/$unDetalle/p")
-        nro_Encuesta_Detalle=$(echo "$unDetalle" | sed -n "s/^D,\([^,]*\),.*/\1/p")    
-        id_Pregunta=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,\([^,]*\),.*/\1/p")
-        respuesta=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-        observaciones=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
-        
-        ##verificacion cantidad de campos
-        if [ -z "$nro_Campos_OK" ]
-        then
-            echo "cantidad de campos incorrecto en detalle"
-            #rechazo bloque por detalle con cantidad campos incorrecto
-            loguearC sumarC A "Bloque rechazado, registro detalle con nro campos incorrecto - Nro.encuesta: $nro_Encuesta"
-            echo "Numero de campos en detalle incorrecto,""$1">> $ARCHIVO_NO_LISTOS
-            return 1
-        
-        fi
+		nro_Campos_OK=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,[^,]*,[^,]*,[^,]*/$unDetalle/p")
+		nro_Encuesta_Detalle=$(echo "$unDetalle" | sed -n "s/^D,\([^,]*\),.*/\1/p")	
+		id_Pregunta=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,\([^,]*\),.*/\1/p")
+		respuesta=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+		observaciones=$(echo "$unDetalle" | sed -n "s/^D,[^,]*,[^,]*,[^,]*,\([^,]*\),.*/\1/p")
+		
+		##verificacion cantidad de campos
+		if [ -z "$nro_Campos_OK" ]
+		then
+			#rechazo bloque por detalle con cantidad campos incorrecto
+			loguearC sumarC A "Bloque rechazado, registro detalle con nro campos incorrecto - Nro.encuesta: $nro_Encuesta"
+			echo "Numero de campos en detalle incorrecto,""$1">> $ARCHIVO_NO_LISTOS
+			return 1
+		
+		fi
 
-        ##verificacion de campos obligatorios
-        if [ -z "$nro_Encuesta_Detalle" -o -z "$id_Pregunta" -o -z "$respuesta" ]
-        then
-            echo "Faltan CAMPOS OBLIGATORIOS detalle papa"
-            #rechazo bloque por falta de campos obligatorios en detalle
-            loguearC sumarC A "Bloque rechazado, falta de campos obligatorios en detalle - Nro.encuesta: $nro_Encuesta"
-            echo "Falta de campos obligatorios en detalle,""$1">> $ARCHIVO_NO_LISTOS
-            return 1
-        fi
+		##verificacion de campos obligatorios
+		if [ -z "$nro_Encuesta_Detalle" -o -z "$id_Pregunta" -o -z "$respuesta" ]
+		then
+			#rechazo bloque por falta de campos obligatorios en detalle
+			loguearC sumarC A "Bloque rechazado, falta de campos obligatorios en detalle - Nro.encuesta: $nro_Encuesta"
+			echo "Falta de campos obligatorios en detalle,""$1">> $ARCHIVO_NO_LISTOS
+			return 1
+		fi
 
-        ############################################################## VALIDACION REGISTRO DE DETALLE
+		############################################################## VALIDACION REGISTRO DE DETALLE
 
-        ##validacion de pregunta existente
-        pregunta_Existe=$(grep "$id_Pregunta" < "$ARCHIVO_MAESTRO_PREGUNTAS")
-        if [ -z "$pregunta_Existe" ]
-        then
-            echo "La pregunta no existe en el maestro de preguntas"
-            #rechazo bloque por no encontrar pregunta en el maestro
-            loguearC sumarC A "Bloque rechazado, no existe la pregunta $id_Pregunta - Nro.encuesta: $nro_Encuesta"
-            echo "No existe la pregunta $id_Pregunta,""$1">> $ARCHIVO_NO_LISTOS
-            return 1
-        fi    
+		##validacion de pregunta existente
+		pregunta_Existe=$(grep "$id_Pregunta" < "$ARCHIVO_MAESTRO_PREGUNTAS")
+		if [ -z "$pregunta_Existe" ]
+		then
+			#rechazo bloque por no encontrar pregunta en el maestro
+			loguearC sumarC A "Bloque rechazado, no existe la pregunta $id_Pregunta - Nro.encuesta: $nro_Encuesta"
+			echo "No existe la pregunta $id_Pregunta,""$1">> $ARCHIVO_NO_LISTOS
+			return 1
+		fi	
 
-        ##validacion de respuesta valida <=> respuesta numerica
-        expr "$respuesta" + 1 &> /dev/null
-        if [ $? -ne 0 ]
-        then
-            echo "La respuesta debe ser un numero"
-            #rechazo bloque por tener una respuesta no numerica
-            loguearC sumarC A "Bloque rechazado, la respuesta debe ser numerica - Nro.encuesta: $nro_Encuesta"
-            echo "La respuesta a la pregunta $id_Pregunta debe ser numerica,""$1">> $ARCHIVO_NO_LISTOS
-            return 1
-        fi            
+		##validacion de respuesta valida <=> respuesta numerica
+		expr "$respuesta" + 1 &> /dev/null
+		if [ $? -ne 0 ]
+		then
+			#rechazo bloque por tener una respuesta no numerica
+			loguearC sumarC A "Bloque rechazado, la respuesta debe ser numerica - Nro.encuesta: $nro_Encuesta"
+			echo "La respuesta a la pregunta $id_Pregunta debe ser numerica,""$1">> $ARCHIVO_NO_LISTOS
+			return 1
+		fi			
 
-        ############################################################## CALCULO DEL PUNTAJE OBTENIDO (todas las verificaciones superadas)
 
-        ponderacion=$(sed -n "s/^$id_Pregunta,[^,]*,[^,]*,\([^,]*\)/\1/p" $ARCHIVO_MAESTRO_PREGUNTAS)
-        tipo_Pregunta=$(sed -n "s/^$id_Pregunta,[^,]*,\([^,]*\),.*/\1/p" $ARCHIVO_MAESTRO_PREGUNTAS)
-        echo "PONDERACION: $ponderacion"
-        echo "TIPO: $tipo_Pregunta"    
+		############################################################## VALIDACION ENCUESTA EXISTENTE
 
-        multiplicador=""
-        sumador=""
+				
+		if [ -e "$ARCHIVO_YA" ]
+		then		
+			ENCUESTA_EXISTE=$(grep "^[^,]*,[^,]*,$nro_Encuesta,.*" "$ARCHIVO_YA") 
+			if [ ! -z "$ENCUESTA_EXISTE" ]
+			then
+				loguearC sumarC A "Bloque rechazado, Encuesta ya procesada - Nro.encuesta: $nro_Encuesta"
+				echo "La encuesta ya ha sido procesada,""$1">> $ARCHIVO_NO_LISTOS
+				return 1
+			fi
+		fi
 
-        if [ $tipo_Pregunta = + ] ; then
-            multiplicador=1
-        fi
-        if [ $tipo_Pregunta = - ] ; then
-            multiplicador=-1
-        fi
+		############################################################## CALCULO DEL PUNTAJE OBTENIDO (todas las verificaciones superadas)
 
-        case $ponderacion in
-            ALTA )
-              sumador=3;;
-            MEDIA )
-              sumador=2;;
-            BAJA )
-              sumador=1;;
-        esac
-        
-        factor=$(expr "$sumador" \* "$multiplicador")
-        a_Sumar=$(expr "$respuesta" \* "$factor")
-        puntaje=$(expr "$puntaje" + "$a_Sumar")
-            
-        nro_Campos_OK=""
-        nro_Encuesta_Detalle=""
-        id_Pregunta=""
-        respuesta=""
-        observaciones=""
-        pregunta_Existe=""
-        ponderacion=""
-        tipo_Pregunta=""
-            
-    done
+		ponderacion=$(sed -n "s/^$id_Pregunta,[^,]*,[^,]*,\([^,]*\)/\1/p" $ARCHIVO_MAESTRO_PREGUNTAS)
+		tipo_Pregunta=$(sed -n "s/^$id_Pregunta,[^,]*,\([^,]*\),.*/\1/p" $ARCHIVO_MAESTRO_PREGUNTAS)
 
-    ############################################################## GRABADO EN EL ARCHIVO SUMARIO DE ENCUESTAS
-    encuestador=$(echo "$unArchivo" | sed -n "s/\([^\.]*\)\.[^\.]*/\1/p")
-    fecha=$(echo "$unArchivo" | sed -n "s/[^\.]*\.\([^\.]*\)/\1/p")
-    
-    echo "$encuestador,$fecha,$nro_Encuesta,$codigo_Encuesta,$puntaje,$codigo_Cliente,$sitio,$modalidad,$persona_Relevada" >> $ARCHIVO_YA
-        
-    return 0
+		multiplicador=""
+		sumador=""
+
+		if [ $tipo_Pregunta = + ] ; then
+			multiplicador=1
+		fi
+		if [ $tipo_Pregunta = - ] ; then
+			multiplicador=-1
+		fi
+
+		case $ponderacion in
+			ALTA )
+			  sumador=3;;
+			MEDIA )
+			  sumador=2;;
+			BAJA )
+			  sumador=1;;
+		esac
+		
+		factor=$(expr "$sumador" \* "$multiplicador")
+		a_Sumar=$(expr "$respuesta" \* "$factor")
+		puntaje=$(expr "$puntaje" + "$a_Sumar")
+			
+		nro_Campos_OK=""
+		nro_Encuesta_Detalle=""
+		id_Pregunta=""
+		respuesta=""
+		observaciones=""
+		pregunta_Existe=""
+		ponderacion=""
+		tipo_Pregunta=""
+			
+	done
+
+	############################################################## GRABADO EN EL ARCHIVO SUMARIO DE ENCUESTAS
+	encuestador=$(echo "$unArchivo" | sed -n "s/\([^\.]*\)\.[^\.]*/\1/p")
+	fecha=$(echo "$unArchivo" | sed -n "s/[^\.]*\.\([^\.]*\)/\1/p")
+	
+	echo "$encuestador,$fecha,$nro_Encuesta,$codigo_Encuesta,$puntaje,$codigo_Cliente,$sitio,$modalidad,$persona_Relevada" >> $ARCHIVO_YA
+		
+	return 0
 }
 
 mostrarAyuda() {
-    echo
-    echo "Genera archivos sumarios de encuestas";echo
-    echo "MODO DE USO: sumarC [OPCION]"; echo
-    echo "OPCIONES";echo
-    echo "-h, --help    Muestra esta pantalla"
-    echo "-v, --version    Informa de la version"
-    echo
-    exit 0
+	echo
+	echo "Genera archivos sumarios de encuestas";echo
+	echo "MODO DE USO: sumarC [OPCION]"; echo
+	echo "OPCIONES";echo
+	echo "-h, --help	Muestra esta pantalla"
+	echo "-v, --version	Informa de la version"
+	echo
+	exit 0
 }
 
 mostrarVersion() {
-    echo    
-    echo "sumarC v 1.0. Escrito por Martin Ciruzzi y Rodolfo Cruz"
-    echo    
-    exit 0
+	echo	
+	echo "sumarC v 1.0. Escrito por Martin Ciruzzi y Rodolfo Cruz"
+	echo	
+	exit 0
 }
 
 ################################################# COMIENZO DEL SCRIPT#####################################################
@@ -267,38 +264,38 @@ mostrarVersion() {
 
 if [ "$#" -gt 1 ]
 then
-    echo "Cantidad de Parametros Incorrecta"
-    loguear -s sumarC $ERR_CANT_PARAMETROS 0
-    exit $ERR_CANT_PARAMETROS
+	echo "Cantidad de Parametros Incorrecta"
+	loguear -s sumarC $ERR_CANT_PARAMETROS 0
+	exit $ERR_CANT_PARAMETROS
 fi
 
 if [ "$#" -eq 1 ]
 then
-    if [ "$1" != "-h" -a "$1" != "--help" -a "$1" != "-v" -a "$1" != "--version" ]
-    then
-        echo "Opcion Invalida"
-        loguearC -s sumarC $ERR_OPCION_INVALIDA
-        exit $ERR_OPCION_INVALIDA
-    else
-        if [ "$1" == "-h" -o "$1" == "--help" ]
-        then
-            mostrarAyuda
-        else
-            mostrarVersion
-        fi
-    fi
+	if [ "$1" != "-h" -a "$1" != "--help" -a "$1" != "-v" -a "$1" != "--version" ]
+	then
+		echo "Opcion Invalida"
+		loguearC -s sumarC $ERR_OPCION_INVALIDA
+		exit $ERR_OPCION_INVALIDA
+	else
+		if [ "$1" == "-h" -o "$1" == "--help" ]
+		then
+			mostrarAyuda
+		else
+			mostrarVersion
+		fi
+	fi
 fi
 
 #Vemos si existe otro sumar corriendo
-#echo "process id $$"
+
 AUX=$( ps -e)
 AUX=$( echo "$AUX" | grep "sumarC" | grep -v "$$")
 
 if [ ! -z "$AUX" ]
-then    
-    echo "hay alguien mas corriendo"
-    loguearC sumarC A "Ya hay otro sumarC corriendo"
-    exit $ERR_SUMARC_CORRIENDO
+then	
+	echo "Hay otro sumarC corriendo"
+	loguearC sumarC A "Ya hay otro sumarC corriendo"
+	exit $ERR_SUMARC_CORRIENDO
 fi
 
 #Si no hay nadie corriendo entonces si hago mi trabajo....
@@ -306,29 +303,30 @@ fi
 # Verifico que el ambiente haya sido inicializado
 if [ -z "$ENTORNO_OK" ]
 then
-    echo "Ambiente no inicializado"
-    loguearC -s sumarC $ERR_ENTORNO_NO_INICIALIZADO
-    exit $ERR_ENTORNO_NO_INICIALIZADO
+	echo "Ambiente no inicializado"
+	loguearC -s sumarC $ERR_ENTORNO_NO_INICIALIZADO
+	exit $ERR_ENTORNO_NO_INICIALIZADO
 
 fi
 
 # Verifico existencia del directorio de encuestas preparadas
 if [ ! -d $DIR_ENCUESTAS_PREPARADAS ]
 then
-    echo "Directorio inexistente"
-    loguearC sumarC -s $ERR_DIR_INEXISTENTE $DIR_ENCUESTAS_PREPARADAS 
-    exit $ERR_DIR_INEXISTENTE
+	echo "Directorio inexistente"
+	loguearC sumarC -s $ERR_DIR_INEXISTENTE $DIR_ENCUESTAS_PREPARADAS 
+	exit $ERR_DIR_INEXISTENTE
 fi
 
-LISTA_ARCHIVOS_PREPARADOS=$( find $DIR_ENCUESTAS_PREPARADAS -maxdepth 1 -type f )
+LISTA_ARCHIVOS_PREPARADOS=$(find $DIR_ENCUESTAS_PREPARADAS -maxdepth 1 -type f )
 
 LISTA_ARCHIVOS_PREPARADOS=$(echo "$LISTA_ARCHIVOS_PREPARADOS" | sed -n "s/.*\/\([^/]*\)$/\1/p")
 
-CANT_ARCHIVOS=$( echo "$LISTA_ARCHIVOS_PREPARADOS" | wc -l )
+CANT_ARCHIVOS=$(echo "$LISTA_ARCHIVOS_PREPARADOS" | wc -l )
 
 # Inicializo el log
 
 loguearC sumarC I "Inicio de SumarC: Cantidad de archivos a procesar = $CANT_ARCHIVOS"
+echo "Inicio de SumarC: Cantidad de archivos a procesar = $CANT_ARCHIVOS"
 
 # Inicio el procesado de archivos....
 encuestas_Aceptadas=0
@@ -338,105 +336,100 @@ archivos_Rechazados=0
 
 
 for unArchivo in $LISTA_ARCHIVOS_PREPARADOS
-do    
-    #logueo el comienzo del proceso de un archivo
-    loguearC sumarC I "Archivo a Procesar: \"$unArchivo\""
-    echo ; echo ; echo ; echo ; echo ; echo 
-    echo "vamos por el archivo: " $unArchivo
-    
+do	
+	#logueo el comienzo del proceso de un archivo
+	loguearC sumarC I "Archivo a Procesar: \"$unArchivo\""
+	echo "Procesando Archivo $unArchivo"
+	
 
 
-    # VERIFICACION QUE NO SEA UN ARCHIVO DUPLICADO
-    if [ -e "$DIR_ENCUESTAS_LISTAS/$unArchivo" ]
-    then
-        loguearC -s sumarC $ERR_ARCH_DUPLICADO $unArchivo
-        moverC "$DIR_ENCUESTAS_PREPARADAS/$unArchivo" "$DIR_ENCUESTAS_RECHAZADAS"
-        archivos_Rechazados=$( expr $archivos_Rechazados + 1 )
-        continue
-    fi        
-    archivos_Aceptados=$( expr $archivos_Aceptados + 1 )
+	# VERIFICACION QUE NO SEA UN ARCHIVO DUPLICADO
+	if [ -e "$DIR_ENCUESTAS_LISTAS/$unArchivo" ]
+	then
+		loguearC -s sumarC $ERR_ARCH_DUPLICADO $unArchivo
+		moverC "$DIR_ENCUESTAS_PREPARADAS/$unArchivo" "$DIR_ENCUESTAS_RECHAZADAS"
+		archivos_Rechazados=$( expr $archivos_Rechazados + 1 )
+		continue
+	fi		
+	archivos_Aceptados=$( expr $archivos_Aceptados + 1 )
 
-    # para todo bloque quiero ver que....
-    
-    #cantidad de lineas del archivo
-    cant_Lineas=$(cat "$DIR_ENCUESTAS_PREPARADAS/$unArchivo" | wc -l )
-    
+	# para todo bloque quiero ver que....
+	
+	#cantidad de lineas del archivo
+	cant_Lineas=$(cat "$DIR_ENCUESTAS_PREPARADAS/$unArchivo" | wc -l )
+	
 
-    for ((num_Linea=1; num_Linea < cant_Lineas; num_Linea++))
-    do
-        #leo una linea de archivo
-        lineaArchivo=$(sed -n "$num_Linea s/\(.*\)/\1/p" "$DIR_ENCUESTAS_PREPARADAS/$unArchivo")
-        
-        esCabecera=$(echo $lineaArchivo | grep "^C,.*")
-        #chequeo si esta linea es una cabecera
-        if [ -z "$esCabecera" ]
-        then
-            #registro basura => sin cabecera
-            echo "registro de detalle sin cabecera,""$lineaArchivo" >> $ARCHIVO_NO_LISTOS
-            loguearC sumarC A "Registro de detalle sin cabecera"
-            #echo "registro de detalle sin cabecera,""$lineaArchivo"
-        else
-            #empiezo a reconocer un bloque    
-            num_Encuesta=$(echo $esCabecera | sed -n "s/^C,\([^,]*\),.*/\1/p")
-            #echo "ENCONTRE UNA CABECERA"
-            echo "NUMERO DE ENCUESTA: $num_Encuesta"
-            
-            #el bloque comienza con la cabecera
-            unBloque="$lineaArchivo"
-            num_Linea=$(expr "$num_Linea" + 1)
-            bloque_Terminado=1
-            
-            #y leo registro detalle que tengan el mismo numero de encuesta
-            while [ $num_Linea -le $cant_Lineas -a $bloque_Terminado -eq 1 ]
-            do
-                
-                lineaArchivo=$(sed -n "$num_Linea s/\(.*\)/\1/p" "$DIR_ENCUESTAS_PREPARADAS/$unArchivo")
-                num_Encuesta_Detalle=$(echo "$lineaArchivo" | sed -n "s/^D,\([^,]*\),.*/\1/p")    
-                
-                #si es una linea con el mismo numero de encuesta la agrego al bloque
-                if [ ! -z "$num_Encuesta_Detalle" ]
-                then
-                    if [ "$num_Encuesta_Detalle" -eq "$num_Encuesta" ]    
-                    then
-                        unBloque=$(echo -e "$unBloque"'\n'"$lineaArchivo")
-                        num_Linea=$(expr "$num_Linea" + 1)
-                    else
-                        bloque_Terminado=0
-                    fi
-                else
-                    bloque_Terminado=0                    
-                fi
+	for ((num_Linea=1; num_Linea < cant_Lineas; num_Linea++))
+	do
+		#leo una linea de archivo
+		lineaArchivo=$(sed -n "$num_Linea s/\(.*\)/\1/p" "$DIR_ENCUESTAS_PREPARADAS/$unArchivo")
+		
+		esCabecera=$(echo $lineaArchivo | grep "^C,.*")
+		#chequeo si esta linea es una cabecera
+		if [ -z "$esCabecera" ]
+		then
+			#registro basura => sin cabecera
+			echo "registro de detalle sin cabecera,""$lineaArchivo" >> $ARCHIVO_NO_LISTOS
+			loguearC sumarC A "Registro de detalle sin cabecera"
 
-                #voy por la siguiente linea (sera parte de este bloque?)
-                
-                                            
-            done
-            
-            echo UN BLOQUE:
-            echo "$unBloque"
-            num_Linea=$(expr "$num_Linea" - 1)
-                
-            #analizo la bondad de ese bloque
-            analizarBloque "$unBloque" #&> /dev/null
-            if [ $? -eq 0 ] ; then
-                loguearC sumarC I "Encuesta $nro_Encuesta aceptada" 
-                encuestas_Aceptadas=$( expr $encuestas_Aceptadas + 1 )    
-            else
-                encuestas_Rechazadas=$( expr $encuestas_Rechazadas + 1 )            
-            fi
-            
-            
-        fi        
-                
+		else
+			#empiezo a reconocer un bloque	
+			num_Encuesta=$(echo $esCabecera | sed -n "s/^C,\([^,]*\),.*/\1/p")
 
-    done 
+			#el bloque comienza con la cabecera
+			unBloque="$lineaArchivo"
+			num_Linea=$(expr "$num_Linea" + 1)
+			bloque_Terminado=1
+			
+			#y leo registro detalle que tengan el mismo numero de encuesta
+			while [ $num_Linea -le $cant_Lineas -a $bloque_Terminado -eq 1 ]
+			do
+				
+				lineaArchivo=$(sed -n "$num_Linea s/\(.*\)/\1/p" "$DIR_ENCUESTAS_PREPARADAS/$unArchivo")
+				num_Encuesta_Detalle=$(echo "$lineaArchivo" | sed -n "s/^D,\([^,]*\),.*/\1/p")	
+				
+				#si es una linea con el mismo numero de encuesta la agrego al bloque
+				if [ ! -z "$num_Encuesta_Detalle" ]
+				then
+					if [ "$num_Encuesta_Detalle" -eq "$num_Encuesta" ]	
+					then
+						unBloque=$(echo -e "$unBloque"'\n'"$lineaArchivo")
+						num_Linea=$(expr "$num_Linea" + 1)
+					else
+						bloque_Terminado=0
+					fi
+				else
+					bloque_Terminado=0					
+				fi
+
+				#voy por la siguiente linea (sera parte de este bloque?)
+				
+											
+			done
+			
+			num_Linea=$(expr "$num_Linea" - 1)
+				
+			#analizo la bondad de ese bloque
+			analizarBloque "$unBloque"
+			if [ $? -eq 0 ] ; then
+				loguearC sumarC I "Encuesta $nro_Encuesta aceptada" 
+				encuestas_Aceptadas=$( expr $encuestas_Aceptadas + 1 )	
+			else
+				encuestas_Rechazadas=$( expr $encuestas_Rechazadas + 1 )			
+			fi
+			
+			
+		fi		
+				
+
+	done 
 
 
-    #logueo el fin del proceso de un archivo
-    loguearC sumarC I "Fin procesar archivo: \"$unArchivo\""
+	#logueo el fin del proceso de un archivo
+	loguearC sumarC I "Fin procesar archivo: \"$unArchivo\""
 
-    # MUEVO ARCHIVO PARA EVITAR SU REPROCESAMIENTO FUTURO
-    moverC "$DIR_ENCUESTAS_PREPARADAS/$unArchivo" "$DIR_ENCUESTAS_PREPARADAS"
+	# MUEVO ARCHIVO PARA EVITAR SU REPROCESAMIENTO FUTURO
+	moverC "$DIR_ENCUESTAS_PREPARADAS/$unArchivo" "$DIR_ENCUESTAS_PREPARADAS"
 done
 
 # CERRAR EL LOG INDICANDO PROCESADOS/RECHAZADOS (archivos) y ACEPTADOS/RECHAZADOS(encuestas)
