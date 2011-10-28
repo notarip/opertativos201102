@@ -261,10 +261,10 @@ function definir_variables
 	export BINDIR="$GRUPO$PROPIEDAD"
 
 	recupera_propiedad "DATAMAE"
-	export DATAMAE="$PROPIEDAD"
+	export DATAMAE="$GRUPO$PROPIEDAD"
 
 	recupera_propiedad "LIBDIR"
-	export LIBDIR="$PROPIEDAD"
+	export LIBDIR="$GRUPO$PROPIEDAD"
 
 	recupera_propiedad "LOGDIR"
 	export LOGDIR="$GRUPO$PROPIEDAD"
