@@ -55,6 +55,16 @@ function unificar_respuestas
 		else
 			if [[ "$AUXRESPUESTA" = "VOLVER" || "$AUXRESPUESTA" = "V" ]];then
 				RESPUESTA="v"
+			else
+
+				if [[ "$AUXRESPUESTA" = "SI" || "$AUXRESPUESTA" = "S" ]];then
+					RESPUESTA="s"
+				else
+
+					if [[ "$AUXRESPUESTA" = "NO" || "$AUXRESPUESTA" = "N" ]];then
+						RESPUESTA="n"
+					fi		
+				fi
 			fi
 		fi
 	fi
@@ -142,9 +152,9 @@ function actualizar_archivo_configuracion
 		#echo -e "$GRUPO"
 		echo "$RESPUESTA" | grep "^\/[a-zA-Z0-9_][a-zA-Z0-9_]*\(\/[a-zA-Z0-9_][a-zA-Z0-9_]*\)*$"
 		echo -e "CURRDIR = $GRUPO" >> $GRUPO/conf/InstalarC.conf
-		echo -e "CONFDIR = $GRUPO/conf" >> $GRUPO/conf/InstalarC.conf
-		echo -e "DATAMAE = $GRUPO/mae" >> $GRUPO/conf/InstalarC.conf
-		echo -e "LIBDIR = $GRUPO/lib" >> $GRUPO/conf/InstalarC.conf
+		echo -e "CONFDIR = /conf" >> $GRUPO/conf/InstalarC.conf
+		echo -e "DATAMAE = /mae" >> $GRUPO/conf/InstalarC.conf
+		echo -e "LIBDIR = /lib" >> $GRUPO/conf/InstalarC.conf
 		echo -e "BINDIR = $DEFBINDIR" >> $GRUPO/conf/InstalarC.conf
 		echo -e "ARRIDIR = $DEFARRIDIR" >> $GRUPO/conf/InstalarC.conf
 		echo -e "DATASIZE = $DEFDATASIZE Mb" >> $GRUPO/conf/InstalarC.conf
@@ -278,7 +288,7 @@ function configurar_logext
 #*******Se pide y se setea, segun lo ingresado por teclado, el nuevo directorio de los archivos de log
 function configurar_logdir
 {
-	mostrar_grabar "Ingrese el nombre del directorio de log: ($GRUPO$DEFLOGDIR)" I
+	mostrar_grabar "Ingrese el nombre del directorio de log: ($DEFLOGDIR)" I
 	#opciones aceptar,cancelar,volver y opcion nueva
 	read -e RESPUESTA
 	mostrar_grabar "$RESPUESTA" I G
@@ -297,7 +307,7 @@ function configurar_logdir
 #*******Se pide y se setea, segun lo ingresado por teclado, el nuevo directorio de los archivos ejecutables
 function configurar_bindir
 {
-	mostrar_grabar "Ingrese el nombre del subdirectorio de ejecutables: ($GRUPO$DEFBINDIR)" I
+	mostrar_grabar "Ingrese el nombre del subdirectorio de ejecutables: ($DEFBINDIR)" I
 	#opciones aceptar,cancelar,volver y opcion nueva
 	read -e RESPUESTA
 	mostrar_grabar "$RESPUESTA" I G
@@ -373,7 +383,7 @@ function configurar_datasize
 function configurar_arridir
 {
 	mostrar_grabar "Ingrese el nombre del directorio que permite el arribo de archivos" I
-	mostrar_grabar "externos ($GRUPO$DEFARRIDIR)" I
+	mostrar_grabar "externos ($DEFARRIDIR)" I
 	#opciones aceptar,cancelar,volver y opcion nueva
 	read -e RESPUESTA
 	mostrar_grabar "$RESPUESTA" I G
@@ -481,8 +491,9 @@ function instalacion_parcial
 	mostrar_grabar "¿acepta completar la instalación?(Si/No)" I
 	read -e RESPUESTA
 	mostrar_grabar "$RESPUESTA" I G
-	RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
-	if [ "$RESPUESTA" = "SI" ];then
+	#RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
+	unificar_respuestas	
+	if [ "$RESPUESTA" = "s" ];then
 		#*******levanta los parametros de instalacion de InstalarC.conf, y crea los ejecutables faltantes
 		setParamFromConf
 		generar_directorios_archivos
@@ -497,8 +508,9 @@ function instalacion_parcial
 		mostrar_grabar "¿desea iniciar una instalación completa nueva?(Si/No)" I
 		read -e RESPUESTA	
 		mostrar_grabar "$RESPUESTA" I G
-		RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
-		if [ "$RESPUESTA" = "SI" ];then
+		#RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")	
+		unificar_respuestas	
+		if [ "$RESPUESTA" = "s" ];then
 			#*******se setean todos los componentes como no instalados, y se setean los parametros de 				#*******instalacion default, ignorando el InstalarC.conf existente
 			INSTALADOS[1]="NO"
 			INSTALADOS[2]="NO"
@@ -558,17 +570,17 @@ function instalacion_completa
 				mostrar_grabar  "****************************************************************" I
 				mostrar_grabar  "*" I
 				mostrar_grabar  "Directorio de trabajo: $GRUPO" I
-				mostrar_grabar  "Directorio de instalación: $GRUPO/inst" I
-				mostrar_grabar  "Directorio de configuración: $GRUPO/conf" I
-				mostrar_grabar  "Directorio de datos maestros: $GRUPO/mae" I
+				mostrar_grabar  "Directorio de instalación: /inst" I
+				mostrar_grabar  "Directorio de configuración: /conf" I
+				mostrar_grabar  "Directorio de datos maestros: /mae" I
 				mostrar_grabar  "Directorio de ejecutables: $DEFBINDIR" I
-				mostrar_grabar  "Librería de funciones: $GRUPO/lib" I
+				mostrar_grabar  "Librería de funciones: /lib" I
 				mostrar_grabar	"Directorio de arribos: $DEFARRIDIR" I
 				mostrar_grabar	"Espacio mínimo reservado en $ARRIDIR: $DEFDATASIZE MB" I
 				mostrar_grabar  "Directorio para los archivos de Log: $DEFLOGDIR" I
 				mostrar_grabar  "Extensión para los archivos de Log: $DEFLOGEXT" I
 				mostrar_grabar  "Tamaño máximo para los archivos de Log: $DEFLOGSIZE KB" I
-				mostrar_grabar  "Log de la instalación: $GRUPO/inst" I
+				mostrar_grabar  "Log de la instalación: /inst" I
 				mostrar_grabar  "Si los datos ingresados son correctos de ENTER para continuar, si" I
 				mostrar_grabar	"desea modificar algún parámetro oprima cualquier tecla para reiniciar" I
 				#*******se lee un caracter ingresado por teclado, y si el mismo es '', se presiono enter.
@@ -587,8 +599,9 @@ function instalacion_completa
 			#*******Se pide confirmación de instalación, cancelando la misma en caso negativo		
 			read -e RESPUESTA	
 			mostrar_grabar "$RESPUESTA" I G
-			RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
-			if [ "$RESPUESTA" != "SI" ];then
+			unificar_respuestas
+			#RESPUESTA=$(echo $RESPUESTA | tr "[:lower:]" "[:upper:]")		
+			if [ "$RESPUESTA" != "s" ];then
 				fin "cancelar"
 			fi
 			#*******se generan los directorios y archivos segun los parametros seteados y se actualiza el 				#*******archivo de configuracion InstalarC.conf
