@@ -92,7 +92,7 @@ INFO=''
 
 #if [ ENTORNO_OK != 1 ];then
 #    echo "Error: Entorno no inicializado"
-#    exit 1
+#   exit 1
 #fi
 
 
@@ -108,7 +108,7 @@ then
     exit 0
 fi
 
-if [ ! -f "$1" ];then
+if [ ! -f "$BINDIR/$1" ];then
     echo "Archivo de proceso Inexistente"
     #loguearC -s $ERR_ARCH_NO_EXISTE $ORIGEN
     exit $ERR_ARCH_NO_EXISTE
